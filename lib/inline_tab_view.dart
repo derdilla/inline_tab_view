@@ -1,7 +1,7 @@
 library inline_tab_view;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:inline_tab_view/first_child_constrained.dart';
 
 class InlineTabBarView extends StatelessWidget {
   const InlineTabBarView({super.key,
@@ -13,6 +13,7 @@ class InlineTabBarView extends StatelessWidget {
 
   final TabController controller;
 
+  /*
   @override
   Widget build(BuildContext context) => GestureDetector(
     onHorizontalDragStart: (details) {
@@ -36,44 +37,110 @@ class InlineTabBarView extends StatelessWidget {
     child: ListenableBuilder(
       listenable: controller,
       builder: (BuildContext context, Widget? child) {
-        print(controller.animation?.value);
-        return AnimatedBuilder(
+        //print(controller.animation?.value);
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: 200,
+          ),
+          child: Stack(
+            children: [
+              AnimatedSize(
+                duration: controller.animationDuration,
+                child: tabs[controller.index],
+              ),
+              AnimatedBuilder(
+                animation: controller.animation!,
+                builder: (BuildContext context, Widget? child) => Transform.translate(
+                  //duration: controller.animationDuration,
+                  //translation: Offset(2 * (controller.offset - 1), 0),
+                  offset: Offset(-MediaQuery.of(context).size.width * controller.animation!.value, 0),
+                  child: OverflowBox(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final t in tabs)
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(child: t),
+                          ),
+                        /*if (controller.index - 1 >= 0)
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(child: tabs[controller.index - 1]),
+                          ),
+                        AnimatedSize(
+                          duration: controller.animationDuration,
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(child: tabs[controller.index]),
+                          ),
+                        ),
+                        if (controller.index + 1 < controller.length)
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(child: tabs[controller.index + 1]),
+                          ),*/
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+
+   */
+
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, _) {
+      return FirstChildConstrainedWidget(
+        sizeDeterminingChild: AnimatedSize(
+          duration: controller.animationDuration,
+          child: tabs[controller.index],
+        ),
+        clippedChild: AnimatedBuilder(
           animation: controller.animation!,
           builder: (BuildContext context, Widget? child) => Transform.translate(
             //duration: controller.animationDuration,
             //translation: Offset(2 * (controller.offset - 1), 0),
             offset: Offset(-MediaQuery.of(context).size.width * controller.animation!.value, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final t in tabs)
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(child: t),
-                  ),
-                /*if (controller.index - 1 >= 0)
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(child: tabs[controller.index - 1]),
-                  ),
-                AnimatedSize(
-                  duration: controller.animationDuration,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(child: tabs[controller.index]),
-                  ),
-                ),
-                if (controller.index + 1 < controller.length)
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(child: tabs[controller.index + 1]),
-                  ),*/
-              ],
+            child: OverflowBox(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final t in tabs)
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Center(child: t),
+                    ),
+                  /*if (controller.index - 1 >= 0)
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: Center(child: tabs[controller.index - 1]),
+                            ),
+                          AnimatedSize(
+                            duration: controller.animationDuration,
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: Center(child: tabs[controller.index]),
+                            ),
+                          ),
+                          if (controller.index + 1 < controller.length)
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: Center(child: tabs[controller.index + 1]),
+                            ),*/
+                ],
+              ),
             ),
           ),
-        );
-      },
-    ),
+        ),
+      );
+    }
   );
 }
 //FIXME: readd animated size
