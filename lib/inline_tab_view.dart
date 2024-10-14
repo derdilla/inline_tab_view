@@ -2,6 +2,9 @@ library inline_tab_view;
 
 import 'package:flutter/material.dart';
 import 'package:inline_tab_view/first_child_constrained.dart';
+import 'dart:math' as math;
+
+import 'animation_animated_size.dart';
 
 class InlineTabBarView extends StatelessWidget {
   const InlineTabBarView({super.key,
@@ -98,8 +101,8 @@ class InlineTabBarView extends StatelessWidget {
     listenable: controller,
     builder: (context, _) {
       return FirstChildConstrainedWidget(
-        sizeDeterminingChild: AnimatedSize(
-          duration: controller.animationDuration,
+        sizeDeterminingChild: AnimationAnimatedSize(
+          animation: controller.animation!,
           child: tabs[controller.index],
         ),
         clippedChild: AnimatedBuilder(
