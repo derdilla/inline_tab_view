@@ -1,19 +1,62 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-class AnimationAnimatedSize extends SingleChildRenderObjectWidget {
-  const AnimationAnimatedSize({super.key,
-    super.child,
+class AnimationAnimatedSize extends StatefulWidget {
+  const AnimationAnimatedSize({
+    super.key,
+    required this.child,
     this.alignment = Alignment.center,
-    required this.animation,
+    this.curve = Curves.linear,
+    required this.controller,
     this.clipBehavior = Clip.hardEdge,
     this.onEnd,
   });
 
+  final Widget child;
+
+  final Curve curve;
+
   final AlignmentGeometry alignment;
 
-  final Animation<double> animation;
+  final TabController controller;
+
+  final Clip clipBehavior;
+
+  final VoidCallback? onEnd;
+
+  @override
+  State<AnimationAnimatedSize> createState() => _AnimationAnimatedSizeState();
+}
+
+class _AnimationAnimatedSizeState extends State<AnimationAnimatedSize>
+  with TickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) => _AnimationAnimatedSize(
+    controller: widget.controller,
+    vsync: this,
+    child: widget.child,
+    // TODO
+  );
+}
+
+
+class _AnimationAnimatedSize extends SingleChildRenderObjectWidget {
+  const _AnimationAnimatedSize({super.key,
+    super.child,
+    this.alignment = Alignment.center,
+    required this.controller,
+    this.clipBehavior = Clip.hardEdge,
+    this.onEnd,
+    required this.vsync
+  });
+
+  final TickerProvider vsync;
+
+  final AlignmentGeometry alignment;
+
+  final TabController controller;
 
   final Clip clipBehavior;
 
@@ -23,10 +66,12 @@ class AnimationAnimatedSize extends SingleChildRenderObjectWidget {
   RenderControllerAnimatedSize createRenderObject(BuildContext context) {
     return RenderControllerAnimatedSize(
       alignment: alignment,
-      animation: animation,
+      tabController: controller,
       textDirection: Directionality.maybeOf(context),
       clipBehavior: clipBehavior,
       onEnd: onEnd,
+      vsync: vsync,
+      duration: controller.animationDuration,
     );
   }
 
@@ -34,17 +79,18 @@ class AnimationAnimatedSize extends SingleChildRenderObjectWidget {
   void updateRenderObject(BuildContext context, RenderControllerAnimatedSize renderObject) {
     renderObject
       ..alignment = alignment
-      ..animation = animation
       ..textDirection = Directionality.maybeOf(context)
       ..clipBehavior = clipBehavior
       ..onEnd = onEnd;
+    // TODO
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<AlignmentGeometry>('alignment', alignment, defaultValue: Alignment.topCenter));
-    properties.add(IntProperty('animation', animation.value.round()));
+    //properties.add(IntProperty('animation', animation.value.round()));
+    // TODO
   }
 }
 
@@ -88,15 +134,6 @@ enum RenderAnimatedSizeState {
   unstable,
 }
 
-/// A render object that animates its size to its child's size over a given
-/// [duration] and with a given [curve]. If the child's size itself animates
-/// (i.e. if it changes size two frames in a row, as opposed to abruptly
-/// changing size in one frame then remaining that size in subsequent frames),
-/// this render object sizes itself to fit the child instead of animating
-/// itself.
-///
-/// When the child overflows the current animated size of this render object, it
-/// is clipped.
 class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   /// Creates a render object that animates its size to match its child.
   /// The [duration] and [curve] arguments define the animation.
@@ -112,20 +149,63 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   /// The arguments [duration], [curve], [alignment], and [vsync] must
   /// not be null.
   RenderControllerAnimatedSize({
+    required TickerProvider vsync,
+    required Duration duration,
+    Duration? reverseDuration,
+    Curve curve = Curves.linear,
     super.alignment,
     super.textDirection,
     super.child,
-    required Animation<double> animation,
-    VoidCallback? onEnd,
     Clip clipBehavior = Clip.hardEdge,
-  }) : _animation = animation,
-        _onEnd = onEnd,
-       _clipBehavior = clipBehavior {
-    _animation.addListener(() {
-      if (_animation.value != _lastValue) {
+    VoidCallback? onEnd,
+    this.tabController,
+  }) : _vsync = vsync,
+        _clipBehavior = clipBehavior {
+    _controller = AnimationController(
+      vsync: vsync,
+      duration: duration,
+      reverseDuration: reverseDuration,
+    )..addListener(() {
+      if (_controller.value != _lastValue) {
         markNeedsLayout();
       }
     });
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: curve,
+    );
+    _onEnd = onEnd;
+
+    // If a TabController is provided, sync its animation with our controller
+    if (tabController != null) {
+      _tabAnimationListener = () {
+        _lastValue = tabController!.animation!.value;
+        //_controller.value = tabController!.animation!.value;
+        _controller.forward(from: tabController!.animation!.value);
+        //print(tabController!.animation!.value);
+      };
+      tabController!.animation!.addListener(_tabAnimationListener!);
+    }
+  }
+
+  final TabController? tabController;
+  VoidCallback? _tabAnimationListener;
+
+  /// When asserts are enabled, returns the animation controller that is used
+  /// to drive the resizing.
+  ///
+  /// Otherwise, returns null.
+  ///
+  /// This getter is intended for use in framework unit tests. Applications must
+  /// not depend on its value.
+  @visibleForTesting
+  AnimationController? get debugController {
+    AnimationController? controller;
+    assert(() {
+      controller = _controller;
+      return true;
+    }());
+    return controller;
   }
 
   /// When asserts are enabled, returns the animation that drives the resizing.
@@ -135,8 +215,8 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   /// This getter is intended for use in framework unit tests. Applications must
   /// not depend on its value.
   @visibleForTesting
-  Animation<double>? get debugAnimation {
-    Animation<double>? animation;
+  CurvedAnimation? get debugAnimation {
+    CurvedAnimation? animation;
     assert(() {
       animation = _animation;
       return true;
@@ -144,7 +224,8 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     return animation;
   }
 
-  late final Animation<double> _animation;
+  late final AnimationController _controller;
+  late final CurvedAnimation _animation;
 
   final SizeTween _sizeTween = SizeTween();
   late bool _hasVisualOverflow;
@@ -156,6 +237,33 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   @visibleForTesting
   RenderAnimatedSizeState get state => _state;
   RenderAnimatedSizeState _state = RenderAnimatedSizeState.start;
+
+  /// The duration of the animation.
+  Duration get duration => _controller.duration!;
+  set duration(Duration value) {
+    if (value == _controller.duration) {
+      return;
+    }
+    _controller.duration = value;
+  }
+
+  /// The duration of the animation when running in reverse.
+  Duration? get reverseDuration => _controller.reverseDuration;
+  set reverseDuration(Duration? value) {
+    if (value == _controller.reverseDuration) {
+      return;
+    }
+    _controller.reverseDuration = value;
+  }
+
+  /// The curve of the animation.
+  Curve get curve => _animation.curve;
+  set curve(Curve value) {
+    if (value == _animation.curve) {
+      return;
+    }
+    _animation.curve = value;
+  }
 
   /// {@macro flutter.material.Material.clipBehavior}
   ///
@@ -174,7 +282,18 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   ///
   /// See [RenderAnimatedSizeState] for situations when we may not be animating
   /// the size.
-  bool get isAnimating => _animation.isAnimating;
+  bool get isAnimating => _controller.isAnimating;
+
+  /// The [TickerProvider] for the [AnimationController] that runs the animation.
+  TickerProvider get vsync => _vsync;
+  TickerProvider _vsync;
+  set vsync(TickerProvider value) {
+    if (value == _vsync) {
+      return;
+    }
+    _vsync = value;
+    _controller.resync(vsync);
+  }
 
   /// Called every time an animation completes.
   ///
@@ -187,14 +306,6 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
       return;
     }
     _onEnd = value;
-  }
-
-  Animation<double> get animation => _animation;
-  set animation(Animation<double> value) {
-    if (value == _animation) {
-      return;
-    }
-    _animation = value;
   }
 
   @override
@@ -210,13 +321,17 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
       // already, to resume interrupted resizing animation.
         markNeedsLayout();
     }
-    _animation.addStatusListener(_animationStatusListener);
+    _controller.addStatusListener(_animationStatusListener);
   }
 
   @override
-  void detach() {
-    _animation.removeStatusListener(_animationStatusListener);
-    super.detach();
+  void dispose() {
+    if (_tabAnimationListener != null) {
+      tabController?.animation?.removeListener(_tabAnimationListener!);
+    }
+    _controller.dispose();
+    _animation.dispose();
+    super.dispose();
   }
 
   Size? get _animatedSize {
@@ -225,10 +340,11 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
 
   @override
   void performLayout() {
-    _lastValue = _animation.value;
+    _lastValue = _controller.value;
     _hasVisualOverflow = false;
     final BoxConstraints constraints = this.constraints;
     if (child == null || constraints.isTight) {
+      _controller.stop();
       size = _sizeTween.begin = _sizeTween.end = constraints.smallest;
       _state = RenderAnimatedSizeState.start;
       child?.layout(constraints);
@@ -274,7 +390,7 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
       case RenderAnimatedSizeState.stable:
         if (_sizeTween.end != childSize) {
           return constraints.constrain(size);
-        } else if (_animation.isCompleted) {
+        } else if (_controller.value == _controller.upperBound) {
           return constraints.constrain(childSize);
         }
       case RenderAnimatedSizeState.unstable:
@@ -285,6 +401,11 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     }
 
     return constraints.constrain(_animatedSize!);
+  }
+
+  void _restartAnimation() {
+    _lastValue = 0.0;
+    _controller.forward(from: 0.0);
   }
 
   /// Laying out the child for the first time.
@@ -305,10 +426,13 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     if (_sizeTween.end != child!.size) {
       _sizeTween.begin = size;
       _sizeTween.end = debugAdoptSize(child!.size);
+      _restartAnimation();
       _state = RenderAnimatedSizeState.changed;
-    } else if (_animation.isCompleted) {
+    } else if (_controller.value == _controller.upperBound) {
       // Animation finished. Reset target sizes.
       _sizeTween.begin = _sizeTween.end = debugAdoptSize(child!.size);
+    } else if (!_controller.isAnimating) {
+      _controller.forward(); // resume the animation after being detached
     }
   }
 
@@ -322,10 +446,15 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     if (_sizeTween.end != child!.size) {
       // Child size changed again. Match the child's size and restart animation.
       _sizeTween.begin = _sizeTween.end = debugAdoptSize(child!.size);
+      _restartAnimation();
       _state = RenderAnimatedSizeState.unstable;
     } else {
       // Child size stabilized.
       _state = RenderAnimatedSizeState.stable;
+      if (!_controller.isAnimating) {
+        // Resume the animation after being detached.
+        _controller.forward();
+      }
     }
   }
 
@@ -336,8 +465,10 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     if (_sizeTween.end != child!.size) {
       // Still unstable. Continue tracking the child.
       _sizeTween.begin = _sizeTween.end = debugAdoptSize(child!.size);
+      _restartAnimation();
     } else {
       // Child size stabilized.
+      _controller.stop();
       _state = RenderAnimatedSizeState.stable;
     }
   }
@@ -367,10 +498,4 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
   }
 
   final LayerHandle<ClipRectLayer> _clipRectLayer = LayerHandle<ClipRectLayer>();
-
-  @override
-  void dispose() {
-    _clipRectLayer.layer = null;
-    super.dispose();
-  }
 }

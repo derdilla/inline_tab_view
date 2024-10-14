@@ -102,8 +102,11 @@ class InlineTabBarView extends StatelessWidget {
     builder: (context, _) {
       return FirstChildConstrainedWidget(
         sizeDeterminingChild: AnimationAnimatedSize(
-          animation: controller.animation!,
-          child: tabs[controller.index],
+          controller: controller,
+          child: ListenableBuilder(
+            listenable: controller.animation!,
+            builder: (_, __) => tabs[controller.index + controller.offset.sign.toInt()],
+          ),
         ),
         clippedChild: AnimatedBuilder(
           animation: controller.animation!,
