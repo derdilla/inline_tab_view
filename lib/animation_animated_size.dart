@@ -56,7 +56,7 @@ class _AnimationAnimatedSize extends SingleChildRenderObjectWidget {
 
   final AlignmentGeometry alignment;
 
-  final TabController controller;
+  final TabController controller; // TODO: consider double 0-1
 
   final Clip clipBehavior;
 
@@ -179,9 +179,10 @@ class RenderControllerAnimatedSize extends RenderAligningShiftedBox {
     // If a TabController is provided, sync its animation with our controller
     if (tabController != null) {
       _tabAnimationListener = () {
+        print(tabController!.animation!.value);
         _lastValue = tabController!.animation!.value;
         //_controller.value = tabController!.animation!.value;
-        _controller.forward(from: tabController!.animation!.value);
+        _controller.value =  tabController!.animation!.value;
         //print(tabController!.animation!.value);
       };
       tabController!.animation!.addListener(_tabAnimationListener!);

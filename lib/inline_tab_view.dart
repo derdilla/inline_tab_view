@@ -1,12 +1,14 @@
 library inline_tab_view;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:inline_tab_view/first_child_constrained.dart';
 import 'dart:math' as math;
 
 import 'animation_animated_size.dart';
 
-class InlineTabBarView extends StatelessWidget {
+class InlineTabBarView extends StatefulWidget {
   const InlineTabBarView({super.key,
     required this.tabs,
     required this.controller,
@@ -16,131 +18,99 @@ class InlineTabBarView extends StatelessWidget {
 
   final TabController controller;
 
-  /*
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onHorizontalDragStart: (details) {
-      controller.offset = 0.0;
-    },
-    onHorizontalDragUpdate: (details) {
-      // FIXME
-      controller.offset = details.delta.dx / 2;
-      print(controller.offset);
-    },
-    onHorizontalDragEnd: (details) {
-      if (details.localPosition.dx > 0) {
-        controller.offset = 1.0;
-        controller.index++;
-      } else {
-        controller.offset = -1.0;
-        controller.index--;
-      }
-    },
-    onHorizontalDragCancel: () {},
-    child: ListenableBuilder(
-      listenable: controller,
-      builder: (BuildContext context, Widget? child) {
-        //print(controller.animation?.value);
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: 200,
-          ),
-          child: Stack(
-            children: [
-              AnimatedSize(
-                duration: controller.animationDuration,
-                child: tabs[controller.index],
-              ),
-              AnimatedBuilder(
-                animation: controller.animation!,
-                builder: (BuildContext context, Widget? child) => Transform.translate(
-                  //duration: controller.animationDuration,
-                  //translation: Offset(2 * (controller.offset - 1), 0),
-                  offset: Offset(-MediaQuery.of(context).size.width * controller.animation!.value, 0),
-                  child: OverflowBox(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final t in tabs)
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(child: t),
-                          ),
-                        /*if (controller.index - 1 >= 0)
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(child: tabs[controller.index - 1]),
-                          ),
-                        AnimatedSize(
-                          duration: controller.animationDuration,
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(child: tabs[controller.index]),
-                          ),
-                        ),
-                        if (controller.index + 1 < controller.length)
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(child: tabs[controller.index + 1]),
-                          ),*/
-                      ],
-                    ),
-                  ),
+  State<InlineTabBarView> createState() => _InlineTabBarViewState();
+}
+
+class _InlineTabBarViewState extends State<InlineTabBarView> {
+  late final ScrollController scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController(
+      keepScrollOffset: false,
+      onAttach: _onScrollableAttach,
+      onDetach: _onScrollableDetach,
+    );
+
+    //widget.controller.
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScrollableAttach(ScrollPosition scrollPosition) {
+    print('scrollPosition att: $scrollPosition');
+  }
+
+  void _onScrollableDetach(ScrollPosition scrollPosition) {
+    print('scrollPosition det: $scrollPosition');
+  }
+
+  double _lastExtend = 0;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: widget.controller,
+    builder: (context, _) {
+      return NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.depth != 0) return false;
+
+          if (notification.metrics.atEdge) return true;
+          if ((notification.metrics.extentAfter - _lastExtend) > 2) { // TODO: consider removing conditions if not needed
+            // content to the left is visible
+            widget.controller.offset = notification.metrics.pixels / notification.metrics.maxScrollExtent;
+            _lastExtend = notification.metrics.extentAfter;
+          } else if ((notification.metrics.extentAfter - _lastExtend) < -2) {
+            // content to the right is visible
+            widget.controller.offset = notification.metrics.pixels / notification.metrics.maxScrollExtent;
+            _lastExtend = notification.metrics.extentAfter;
+          }
+
+          /*if (notification is ScrollEndNotification) {
+            if (widget.controller.offset < 0.0) {
+              widget.controller.index -= 1;
+              widget.controller.offset = 0.0;
+            } else if (widget.controller.offset > 0.0) {
+              widget.controller.index += 1;
+              widget.controller.offset = 0.0;
+            }
+          }*/ // FIXME: snapping
+          return true;
+        },
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          controller: scrollController,
+          dragStartBehavior: DragStartBehavior.down,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * widget.tabs.length,
+            child: FirstChildConstrainedWidget(
+              sizeDeterminingChild: AnimationAnimatedSize(
+                controller: widget.controller,
+                child: ListenableBuilder(
+                  listenable: widget.controller.animation!,
+                  builder: (_, __) => widget.tabs[widget.controller.index + widget.controller.offset.sign.toInt()],
                 ),
               ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
-
-   */
-
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: controller,
-    builder: (context, _) {
-      return FirstChildConstrainedWidget(
-        sizeDeterminingChild: AnimationAnimatedSize(
-          controller: controller,
-          child: ListenableBuilder(
-            listenable: controller.animation!,
-            builder: (_, __) => tabs[controller.index + controller.offset.sign.toInt()],
-          ),
-        ),
-        clippedChild: AnimatedBuilder(
-          animation: controller.animation!,
-          builder: (BuildContext context, Widget? child) => Transform.translate(
-            //duration: controller.animationDuration,
-            //translation: Offset(2 * (controller.offset - 1), 0),
-            offset: Offset(-MediaQuery.of(context).size.width * controller.animation!.value, 0),
-            child: OverflowBox(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (final t in tabs)
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Center(child: t),
-                    ),
-                  /*if (controller.index - 1 >= 0)
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: Center(child: tabs[controller.index - 1]),
-                            ),
-                          AnimatedSize(
-                            duration: controller.animationDuration,
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: Center(child: tabs[controller.index]),
-                            ),
-                          ),
-                          if (controller.index + 1 < controller.length)
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: Center(child: tabs[controller.index + 1]),
-                            ),*/
-                ],
+              clippedChild: AnimatedBuilder(
+                animation: widget.controller.animation!,
+                builder: (BuildContext context, Widget? child) => OverflowBox(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final t in widget.tabs)
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: Center(child: t),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
