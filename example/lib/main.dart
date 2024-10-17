@@ -92,7 +92,8 @@ class _FormSwitcherState extends State<FormSwitcher>
             ],
           ),
         ),
-        InlineTabBarView(
+        Container(width: 400, height: 4, color: Colors.blue,),
+        InlineTabView(
           controller: controller,
           tabs: [
             for (final f in widget.subforms)

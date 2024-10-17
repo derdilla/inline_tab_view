@@ -1,122 +1,164 @@
-library inline_tab_view;
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:inline_tab_view/first_child_constrained.dart';
-import 'dart:math' as math;
+import 'package:flutter/rendering.dart';
 
-import 'animation_animated_size.dart';
+//export 'widget_based_inline_tab_view.dart';
 
-class InlineTabBarView extends StatefulWidget {
-  const InlineTabBarView({super.key,
-    required this.tabs,
+class InlineTabView extends StatelessWidget {
+  InlineTabView({super.key,
     required this.controller,
-  });
+    required this.tabs
+  }) : assert(tabs.length == controller.length),
+       assert(controller.animation != null, 'invalid controller');
+
+  final TabController controller;
 
   final List<Widget> tabs;
+
+  @override
+  Widget build(BuildContext context) => _InlineTabView(
+    controller: controller,
+    tabs: tabs,
+  );
+}
+
+class _InlineTabView extends MultiChildRenderObjectWidget {
+  const _InlineTabView({
+    required this.controller,
+    required List<Widget> tabs,
+  }) : super(children: tabs);
 
   final TabController controller;
 
   @override
-  State<InlineTabBarView> createState() => _InlineTabBarViewState();
+  _InlineTabViewRenderObject createRenderObject(BuildContext context) =>
+      _InlineTabViewRenderObject(controller);
+
+  @override
+  void updateRenderObject(BuildContext context, _InlineTabViewRenderObject renderObject) {
+    // renderObject.controller = controller
+    // TODO
+  }
 }
 
-class _InlineTabBarViewState extends State<InlineTabBarView> {
-  late final ScrollController scrollController;
+class _InlineTabViewRenderObjectParentData extends ContainerBoxParentData<RenderBox> {}
 
-  @override
-  void initState() {
-    super.initState();
-    scrollController = ScrollController(
-      keepScrollOffset: false,
-      onAttach: _onScrollableAttach,
-      onDetach: _onScrollableDetach,
-    );
-
-    //widget.controller.
+class _InlineTabViewRenderObject extends RenderBox
+    with ContainerRenderObjectMixin<RenderBox, _InlineTabViewRenderObjectParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData> {
+  _InlineTabViewRenderObject(this.controller) {
+    controller.animation!.addListener(_onTabControllerAnimationUpdate);
   }
 
   @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScrollableAttach(ScrollPosition scrollPosition) {
-    print('scrollPosition att: $scrollPosition');
-  }
-
-  void _onScrollableDetach(ScrollPosition scrollPosition) {
-    print('scrollPosition det: $scrollPosition');
-  }
-
-  double _lastExtend = 0;
-
-  @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.controller,
-    builder: (context, _) {
-      return NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification.depth != 0) return false;
-
-          if (notification.metrics.atEdge) return true;
-          if ((notification.metrics.extentAfter - _lastExtend) > 2) { // TODO: consider removing conditions if not needed
-            // content to the left is visible
-            widget.controller.offset = notification.metrics.pixels / notification.metrics.maxScrollExtent;
-            _lastExtend = notification.metrics.extentAfter;
-          } else if ((notification.metrics.extentAfter - _lastExtend) < -2) {
-            // content to the right is visible
-            widget.controller.offset = notification.metrics.pixels / notification.metrics.maxScrollExtent;
-            _lastExtend = notification.metrics.extentAfter;
-          }
-
-          /*if (notification is ScrollEndNotification) {
-            if (widget.controller.offset < 0.0) {
-              widget.controller.index -= 1;
-              widget.controller.offset = 0.0;
-            } else if (widget.controller.offset > 0.0) {
-              widget.controller.index += 1;
-              widget.controller.offset = 0.0;
-            }
-          }*/ // FIXME: snapping
-          return true;
-        },
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          controller: scrollController,
-          dragStartBehavior: DragStartBehavior.down,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * widget.tabs.length,
-            child: FirstChildConstrainedWidget(
-              sizeDeterminingChild: AnimationAnimatedSize(
-                controller: widget.controller,
-                child: ListenableBuilder(
-                  listenable: widget.controller.animation!,
-                  builder: (_, __) => widget.tabs[widget.controller.index + widget.controller.offset.sign.toInt()],
-                ),
-              ),
-              clippedChild: AnimatedBuilder(
-                animation: widget.controller.animation!,
-                builder: (BuildContext context, Widget? child) => OverflowBox(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final t in widget.tabs)
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: Center(child: t),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _InlineTabViewRenderObjectParentData) {
+      child.parentData = _InlineTabViewRenderObjectParentData();
     }
-  );
+  }
+
+  void _onTabControllerAnimationUpdate() {
+    markNeedsLayout();
+    markNeedsPaint();
+  }
+
+  final TabController controller;
+
+  int get _index => controller.index;
+
+  double get _exactIndex => controller.index + controller.animation!.value;
+
+  /// The [_index] that's most likely to be selected next in the current gesture.
+  int? get _scrollingToIndex {
+    if (_exactIndex > _index) return _index + 1;
+    if (_exactIndex < _index) return _index - 1;
+    return null;
+  }
+
+  RenderBox? childByIndex(int index) {
+    //print('x: $x, childCount: $childCount');
+    if (index < 0 || index >= childCount) return null;
+    RenderBox? child = firstChild;
+    int i = 0;
+
+    while (child != null && i < index) {
+      child = childAfter(child);
+      i++;
+    }
+
+    return child;
+  }
+
+  @override
+  void debugAssertDoesMeetConstraints() {
+    assert(size.isFinite, 'TODO: document');
+    super.debugAssertDoesMeetConstraints();
+  }
+
+  @override
+  void performLayout() {
+    // Since these 2 take the whole width, no other children need to be considered.
+    final RenderBox? selectedTabSize = childByIndex(_index);
+    final nextIndex = _scrollingToIndex; // TODO: optimize: use childAfter, cache back scrolling
+    final RenderBox? nextTabSize = nextIndex != null ? childByIndex(nextIndex) : null;
+
+    selectedTabSize?.layout(constraints, parentUsesSize: true);
+    nextTabSize?.layout(constraints, parentUsesSize: true);
+
+    if (selectedTabSize == null) {
+      size = constraints.smallest;
+      assert(false, '');
+      return;
+    }
+
+    if (nextTabSize != null) {
+      final totalHeightDiff = nextTabSize.size.height - selectedTabSize.size.height;
+      final newHeight = controller.animation!.value * totalHeightDiff;
+      size = Size(constraints.maxWidth, newHeight);
+    } else {
+      size = Size(constraints.maxWidth, selectedTabSize.size.height);
+    }
+
+    markNeedsPaint();
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // The selected child aligns widgets to the top and takes the entire width.
+    // When switching between children the view gets offset by a percentage of
+    // the constraints (the tabController offset conveniently is in [-1.0,1.0].
+
+    final horizontalCenter = size.width / 2;
+    final horizontalOffset = - controller.offset * size.width;
+    final horizontalDrawPosition = offset.dx + horizontalCenter + horizontalOffset;
+    //print('size.width: ${size.width}, horizontalCenter: $horizontalCenter, horizontalOffset: $horizontalOffset');
+    //print('_index: $_index, offset: $offset');
+
+    final primaryChild = childByIndex(_index)!;
+    context.paintChild(primaryChild, Offset(
+      horizontalDrawPosition - primaryChild.size.width / 2,
+      offset.dy,
+    ));
+
+    if (_exactIndex > _index && _index + 1 < controller.length ) {
+      final child = childByIndex(_index + 1)!;
+      context.paintChild(child, Offset(
+        horizontalDrawPosition + size.width - child.size.width / 2,
+        offset.dy,
+      ));
+
+    } else if (_exactIndex < _index && _index - 1 >= 0) {
+      final child = childByIndex(_index - 1)!;
+      context.paintChild(child, Offset(
+        horizontalDrawPosition - size.width - child.size.width / 2,
+        offset.dy,
+      ));
+    }
+  }
 }
-//FIXME: readd animated size
+
+
+
+// TODO:
+// - dragging
+// - context controller
+// - didChangeDependencies, didUpdateWidget
