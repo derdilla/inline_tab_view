@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -44,9 +45,12 @@ class _InlineTabViewRenderObjectParentData extends ContainerBoxParentData<Render
 
 class _InlineTabViewRenderObject extends RenderBox
     with ContainerRenderObjectMixin<RenderBox, _InlineTabViewRenderObjectParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData> {
+        RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData>
+    implements HitTestTarget {
   _InlineTabViewRenderObject(this.controller) {
+    __animationValue = controller.animation!.value;
     controller.animation!.addListener(_onTabControllerAnimationUpdate);
+    // TODO: unregister when appropriate
   }
 
   @override
@@ -57,15 +61,25 @@ class _InlineTabViewRenderObject extends RenderBox
   }
 
   void _onTabControllerAnimationUpdate() {
+    __animationValue = controller.animation!.value;
     markNeedsLayout();
     markNeedsPaint();
   }
 
   final TabController controller;
 
+  late double __animationValue;
+  /// Local animation value kept in sync with the controllers.
+  double get _animationValue => __animationValue;
+  set _animationValue(double value) {
+    print(value);
+    __animationValue = value;
+    controller.offset = value;
+  }
+
   int get _index => controller.index;
 
-  double get _exactIndex => controller.index + controller.animation!.value;
+  double get _exactIndex => controller.index + _animationValue;
 
   /// The [_index] that's most likely to be selected next in the current gesture.
   int? get _scrollingToIndex {
@@ -86,6 +100,40 @@ class _InlineTabViewRenderObject extends RenderBox
     }
 
     return child;
+  }
+
+  void _attemptSnap() {
+    final offset = _animationValue;
+    _animationValue = 0.0;
+
+    if (offset.abs() > 0.2) {
+      final newIndex = (_index + offset.sign).clamp(0, controller.length - 1);
+      controller.animateTo(newIndex.round());
+    }
+    // FIXME: back dragging unreliable
+  }
+
+  /// Horizontal value where the drag started.
+  double? _dragStartPos;
+
+  @override
+  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+    assert(debugHandleEvent(event, entry));
+    if (event is PointerDownEvent) {
+      _dragStartPos = event.position.dx;
+    } else if (event is PointerUpEvent) {
+      _attemptSnap();
+      _dragStartPos = null;
+      markNeedsLayout();
+    } else if (event is PointerMoveEvent) {
+      // TODO: avoid oob scroll
+      final delta = event.position.dx - _dragStartPos!;
+      final offset = delta / size.width;
+      assert(offset >= -1.0 && offset <= 1.0);
+
+      _animationValue = - offset;
+      markNeedsPaint();
+    }
   }
 
   @override
@@ -112,7 +160,7 @@ class _InlineTabViewRenderObject extends RenderBox
 
     if (nextTabSize != null) {
       final totalHeightDiff = nextTabSize.size.height - selectedTabSize.size.height;
-      final newHeight = controller.animation!.value * totalHeightDiff;
+      final newHeight = selectedTabSize.size.height + _animationValue * totalHeightDiff;
       size = Size(constraints.maxWidth, newHeight);
     } else {
       size = Size(constraints.maxWidth, selectedTabSize.size.height);
@@ -154,6 +202,13 @@ class _InlineTabViewRenderObject extends RenderBox
       ));
     }
   }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
+    // TODO: implement
+    return true;
+  }
+
 }
 
 
@@ -162,3 +217,4 @@ class _InlineTabViewRenderObject extends RenderBox
 // - dragging
 // - context controller
 // - didChangeDependencies, didUpdateWidget
+// - semantics

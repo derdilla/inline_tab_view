@@ -97,7 +97,7 @@ class _FormSwitcherState extends State<FormSwitcher>
           controller: controller,
           tabs: [
             for (final f in widget.subforms)
-              Align(alignment: Alignment.topCenter, child: f.$2),
+              f.$2,
           ],
         ),
       ],
