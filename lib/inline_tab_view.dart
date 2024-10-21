@@ -49,8 +49,13 @@ class _InlineTabViewRenderObject extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData>
     implements HitTestTarget {
   _InlineTabViewRenderObject(this._controller) {
-    controller.animation!.addListener(_onTabControllerAnimationUpdate);
-    // TODO: unregister when appropriate
+    controller.animation!.addListener(markNeedsLayout);
+  }
+
+  @override
+  void dispose() {
+    controller.animation?.removeListener(markNeedsLayout);
+    super.dispose();
   }
 
   @override
@@ -58,10 +63,6 @@ class _InlineTabViewRenderObject extends RenderBox
     if (child.parentData is! _InlineTabViewRenderObjectParentData) {
       child.parentData = _InlineTabViewRenderObjectParentData();
     }
-  }
-
-  void _onTabControllerAnimationUpdate() {
-    markNeedsLayout();
   }
 
   TabController _controller;
