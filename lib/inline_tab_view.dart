@@ -16,9 +16,11 @@ class InlineTabView extends StatelessWidget {
   final List<Widget> tabs;
 
   @override
-  Widget build(BuildContext context) => _InlineTabView(
-    controller: controller,
-    tabs: tabs,
+  Widget build(BuildContext context) => ClipRect(
+    child: _InlineTabView(
+      controller: controller,
+      tabs: tabs,
+    ),
   );
 }
 
@@ -48,7 +50,6 @@ class _InlineTabViewRenderObject extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData>
     implements HitTestTarget {
   _InlineTabViewRenderObject(this.controller) {
-    __animationValue = controller.animation!.value;
     controller.animation!.addListener(_onTabControllerAnimationUpdate);
     // TODO: unregister when appropriate
   }
@@ -61,32 +62,14 @@ class _InlineTabViewRenderObject extends RenderBox
   }
 
   void _onTabControllerAnimationUpdate() {
-    __animationValue = controller.animation!.value;
     markNeedsLayout();
-    markNeedsPaint();
   }
 
   final TabController controller;
 
-  late double __animationValue;
-  /// Local animation value kept in sync with the controllers.
-  double get _animationValue => __animationValue;
-  set _animationValue(double value) {
-    print(value);
-    __animationValue = value;
-    controller.offset = value;
-  }
-
   int get _index => controller.index;
 
-  double get _exactIndex => controller.index + _animationValue;
-
-  /// The [_index] that's most likely to be selected next in the current gesture.
-  int? get _scrollingToIndex {
-    if (_exactIndex > _index) return _index + 1;
-    if (_exactIndex < _index) return _index - 1;
-    return null;
-  }
+  double get _exactIndex => controller.index + controller.offset;
 
   RenderBox? childByIndex(int index) {
     //print('x: $x, childCount: $childCount');
@@ -103,8 +86,8 @@ class _InlineTabViewRenderObject extends RenderBox
   }
 
   void _attemptSnap() {
-    final offset = _animationValue;
-    _animationValue = 0.0;
+    final offset = controller.offset;
+    controller.offset = 0.0;
 
     if (offset.abs() > 0.2) {
       final newIndex = (_index + offset.sign).clamp(0, controller.length - 1);
@@ -131,7 +114,7 @@ class _InlineTabViewRenderObject extends RenderBox
       final offset = delta / size.width;
       assert(offset >= -1.0 && offset <= 1.0);
 
-      _animationValue = - offset;
+      controller.offset = - offset;
       markNeedsPaint();
     }
   }
@@ -145,25 +128,35 @@ class _InlineTabViewRenderObject extends RenderBox
   @override
   void performLayout() {
     // Since these 2 take the whole width, no other children need to be considered.
-    final RenderBox? selectedTabSize = childByIndex(_index);
-    final nextIndex = _scrollingToIndex; // TODO: optimize: use childAfter, cache back scrolling
-    final RenderBox? nextTabSize = nextIndex != null ? childByIndex(nextIndex) : null;
+    final RenderBox? selectedTab = childByIndex(_index);
+    final RenderBox? nextTab = selectedTab != null ? childAfter(selectedTab) : null;
+    final RenderBox? previousTab = selectedTab != null ? childBefore(selectedTab) : null;
 
-    selectedTabSize?.layout(constraints, parentUsesSize: true);
-    nextTabSize?.layout(constraints, parentUsesSize: true);
+    selectedTab?.layout(constraints, parentUsesSize: true);
+    nextTab?.layout(constraints, parentUsesSize: true);
+    previousTab?.layout(constraints, parentUsesSize: true);
 
-    if (selectedTabSize == null) {
+    if (selectedTab == null) {
       size = constraints.smallest;
       assert(false, '');
       return;
     }
 
-    if (nextTabSize != null) {
-      final totalHeightDiff = nextTabSize.size.height - selectedTabSize.size.height;
-      final newHeight = selectedTabSize.size.height + _animationValue * totalHeightDiff;
+    final scrollingToTab = (_exactIndex == _index)
+     ? null : ((_exactIndex > _index)
+        ? nextTab
+        : previousTab);
+
+    if (scrollingToTab != null) {
+      final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
+      double movePercent = (controller.animation!.value + 1.0) / 2;
+      if (_exactIndex < _index) movePercent = 1 - movePercent; // fix scroll direction
+      assert(movePercent >= 0.0 && movePercent <= 1.0);
+
+      final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
       size = Size(constraints.maxWidth, newHeight);
     } else {
-      size = Size(constraints.maxWidth, selectedTabSize.size.height);
+      size = Size(constraints.maxWidth, selectedTab.size.height);
     }
 
     markNeedsPaint();
@@ -187,17 +180,18 @@ class _InlineTabViewRenderObject extends RenderBox
       offset.dy,
     ));
 
-    if (_exactIndex > _index && _index + 1 < controller.length ) {
-      final child = childByIndex(_index + 1)!;
-      context.paintChild(child, Offset(
-        horizontalDrawPosition + size.width - child.size.width / 2,
+    // Render child before and after, potentially oob to simplify scrolling
+    final nextChild = childAfter(primaryChild);
+    final previousChild = childBefore(primaryChild);
+    if (nextChild != null) {
+      context.paintChild(nextChild, Offset(
+        horizontalDrawPosition + size.width - nextChild.size.width / 2,
         offset.dy,
       ));
-
-    } else if (_exactIndex < _index && _index - 1 >= 0) {
-      final child = childByIndex(_index - 1)!;
-      context.paintChild(child, Offset(
-        horizontalDrawPosition - size.width - child.size.width / 2,
+    }
+    if (previousChild != null) {
+      context.paintChild(previousChild, Offset(
+        horizontalDrawPosition - size.width + previousChild.size.width / 2,
         offset.dy,
       ));
     }
