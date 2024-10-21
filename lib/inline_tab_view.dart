@@ -93,7 +93,7 @@ class _InlineTabViewRenderObject extends RenderBox
       final newIndex = (_index + offset.sign).clamp(0, controller.length - 1);
       controller.animateTo(newIndex.round());
     }
-    // FIXME: back dragging unreliable
+    // FIXME: snaps to start of animation before continuing
   }
 
   /// Horizontal value where the drag started.
@@ -109,12 +109,16 @@ class _InlineTabViewRenderObject extends RenderBox
       _dragStartPos = null;
       markNeedsLayout();
     } else if (event is PointerMoveEvent) {
-      // TODO: avoid oob scroll
       final delta = event.position.dx - _dragStartPos!;
-      final offset = delta / size.width;
+      double offset = delta / size.width;
+      offset = - offset;
       assert(offset >= -1.0 && offset <= 1.0);
 
-      controller.offset = - offset;
+      // avoid oob scroll
+      if (controller.index == 0 && offset < 0
+        || controller.index == (controller.length - 1) && offset > 0) offset = 0;
+
+      controller.offset = offset;
       markNeedsPaint();
     }
   }
