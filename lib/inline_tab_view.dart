@@ -38,8 +38,7 @@ class _InlineTabView extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(BuildContext context, _InlineTabViewRenderObject renderObject) {
-    // renderObject.controller = controller
-    // TODO
+    renderObject.controller = controller;
   }
 }
 
@@ -49,7 +48,7 @@ class _InlineTabViewRenderObject extends RenderBox
     with ContainerRenderObjectMixin<RenderBox, _InlineTabViewRenderObjectParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _InlineTabViewRenderObjectParentData>
     implements HitTestTarget {
-  _InlineTabViewRenderObject(this.controller) {
+  _InlineTabViewRenderObject(this._controller) {
     controller.animation!.addListener(_onTabControllerAnimationUpdate);
     // TODO: unregister when appropriate
   }
@@ -65,7 +64,16 @@ class _InlineTabViewRenderObject extends RenderBox
     markNeedsLayout();
   }
 
-  final TabController controller;
+  TabController _controller;
+
+  /// Primary controller of index and drag state.
+  TabController get controller => _controller;
+  set controller(TabController controller) {
+    if (controller != _controller) {
+      _controller = controller;
+      markNeedsLayout();
+    }
+  }
 
   int get _index => controller.index;
 
@@ -203,7 +211,7 @@ class _InlineTabViewRenderObject extends RenderBox
 
   @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
-    // TODO: implement
+    // The entire widget should be responsive to drags.
     return true;
   }
 
@@ -212,7 +220,6 @@ class _InlineTabViewRenderObject extends RenderBox
 
 
 // TODO:
-// - dragging
 // - context controller
 // - didChangeDependencies, didUpdateWidget
 // - semantics
