@@ -96,13 +96,12 @@ class _InlineTabViewRenderObject extends RenderBox
 
   void _attemptSnap() {
     final offset = controller.offset;
-    controller.offset = 0.0;
-
     if (offset.abs() > 0.2) {
       final newIndex = (_index + offset.sign).clamp(0, controller.length - 1);
       controller.animateTo(newIndex.round());
+    } else {
+      controller.offset = 0;
     }
-    // FIXME: snaps to start of animation before continuing
   }
 
   /// Horizontal value where the drag started.
@@ -162,10 +161,10 @@ class _InlineTabViewRenderObject extends RenderBox
 
     if (scrollingToTab != null) {
       final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
-      double movePercent = (controller.animation!.value + 1.0) / 2;
-      if (_exactIndex < _index) movePercent = 1 - movePercent; // fix scroll direction
+      double movePercent = controller.offset.abs();
       assert(movePercent >= 0.0 && movePercent <= 1.0);
 
+      print(movePercent);
       final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
       size = Size(constraints.maxWidth, newHeight);
     } else {
@@ -204,7 +203,7 @@ class _InlineTabViewRenderObject extends RenderBox
     }
     if (previousChild != null) {
       context.paintChild(previousChild, Offset(
-        horizontalDrawPosition - size.width + previousChild.size.width / 2,
+        horizontalDrawPosition - size.width - previousChild.size.width / 2,
         offset.dy,
       ));
     }
