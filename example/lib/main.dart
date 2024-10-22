@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:inline_tab_view/inline_tab_view.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MaterialApp(
+    theme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      useMaterial3: true,
+      appBarTheme: AppBarTheme(color: Colors.teal)
+    ),
+    home: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -10,28 +17,55 @@ class MyApp extends StatelessWidget {
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: Scaffold(
-        body: ListView(
-          children: [
-            Text('before'),
-            FormSwitcher(
-              subforms: [
-                (Text('Form 1'), Container(height: 50, width: 100, color: Colors.red,)),
-                (Text('Form 2'), Container(height: 200, width: 100, color: Colors.blue,)),
-              ],
-            ),
-            Text('after')
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text('InlineTabView examples')),
+    body: ListView(
+      children: [
+        Text('These examples include a TabBar, the classical TabBarView '
+            '(constrained to a fixed height), and the InlineTabView.'),
+        SwitchListTile(
+          title: Text('Display classical TabBarView'),
+          value: true, // TODO: implement
+          onChanged: (v) {},
+        ),
+        Divider(),
+        Text('Example with 2 colored boxes', style: Theme.of(context).textTheme.titleLarge,),
+        FormSwitcher(
+          subforms: [
+            (Text('Box 1'), Container(height: 50, width: 100, color: Colors.red,)),
+            (Text('Box 2'), Container(height: 200, width: 100, color: Colors.blue,)),
           ],
         ),
-      ),
-    );
-  }
+
+        Divider(),
+        Text('Example with 3 widgets', style: Theme.of(context).textTheme.titleLarge,),
+        FormSwitcher(
+          subforms: [
+            (Text('Widget 1'), Text(loremIpsum)),
+            (Text('Widget 2'), Column(
+              children: [
+                TextField(),
+                TextField(),
+                TextField(),
+              ],
+            )),
+            (Text('Widget 3'), Container(height: 200, width: 100, color: Colors.blue,)),
+          ],
+        ),
+
+        Divider(),
+        Text('Example with 20 colored boxes', style: Theme.of(context).textTheme.titleLarge,),
+        FormSwitcher(
+          subforms: [
+            for (int i = 0; i < 20; i++)
+              (Text('Box $i'), Container(height: 50.0 + 4.0 * i, width: 100.0,
+                color: (i % 2 == 0) ? Colors.red : Colors.blue,)),
+          ],
+        ),
+        SizedBox(height: 200,)
+      ],
+    ),
+  );
 }
 
 
@@ -92,7 +126,9 @@ class _FormSwitcherState extends State<FormSwitcher>
             ],
           ),
         ),
+        SizedBox(height: 8,),
         Container(width: 400, height: 4, color: Colors.blue,),
+        SizedBox(height: 8,),
         InlineTabView(
           controller: controller,
           tabs: [
@@ -105,90 +141,4 @@ class _FormSwitcherState extends State<FormSwitcher>
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
+const String loremIpsum = 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem.';

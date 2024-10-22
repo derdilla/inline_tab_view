@@ -164,7 +164,6 @@ class _InlineTabViewRenderObject extends RenderBox
       double movePercent = controller.offset.abs();
       assert(movePercent >= 0.0 && movePercent <= 1.0);
 
-      print(movePercent);
       final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
       size = Size(constraints.maxWidth, newHeight);
     } else {
