@@ -1,39 +1,29 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+A inlineable TabBarView animating height taken by the widget without hacks. Creates a custom render object that mimics the default [TabBarView](https://api.flutter.dev/flutter/material/TabBarView-class.html) behavior that does not try to take up the entire available height.
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+This avoids hacky tricks like detecting the child height during widget build and allows for smooth animation. With this focus on quality full test coverage and documentation is provided.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+You can use the widget similar to the original widget like this:
 
 ```dart
-const like = 'sample';
+InlineTabView(
+  controller: controller,
+  tabs: [
+    FirstChild(),
+    SecondChild(),
+    // Add other children to match [controller.length]
+  ],
+),
 ```
 
-## Additional information
+Check out the app in the `/example` folder for more complex use cases and an interactive demo.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+
+## TODO
+
+- Showcase in readme
+- Full testing & CI
+- TODOs in code
+- Exactly match API (readme update)
+- publish
