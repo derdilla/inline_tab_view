@@ -40,4 +40,7 @@ void main() {
     expect(find.byType(InlineTabView), findsOneWidget);
     expect(find.byType(SizedBox), findsNWidgets(50));
   });
+  testWidgets('propagates semantics of selected widget', (tester) async {
+    // TODO: extract to render object test
+  });
 }

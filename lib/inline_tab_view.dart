@@ -2,8 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-//export 'widget_based_inline_tab_view.dart';
-
 class InlineTabView extends StatelessWidget {
   InlineTabView({super.key,
     required this.controller,
@@ -81,7 +79,7 @@ class _InlineTabViewRenderObject extends RenderBox
   double get _exactIndex => controller.index + controller.offset;
 
   RenderBox? childByIndex(int index) {
-    //print('x: $x, childCount: $childCount');
+    // TODO: cache primary child and create specialized getter
     if (index < 0 || index >= childCount) return null;
     RenderBox? child = firstChild;
     int i = 0;
@@ -209,6 +207,28 @@ class _InlineTabViewRenderObject extends RenderBox
   }
 
   @override
+  Rect? describeSemanticsClip(RenderBox? child) {
+    final idx = childByIndex(_index)!;
+    if (child == idx) {
+      return null; // Same as paint clip
+    }
+    return const Rect.fromLTRB(-1, -1, -1, -1); // Drop semantics
+  }
+
+  @override
+  void visitChildren(RenderObjectVisitor visitor) {
+    final idx = childByIndex(_index)!;
+    visitor(idx);
+    if (controller.offset > 0) {
+      assert(childAfter(idx) != null);
+      visitor(childAfter(idx)!);
+    } else if (controller.offset < 0) {
+      assert(childBefore(idx) != null);
+      visitor(childBefore(idx)!);
+    }
+  }
+
+  @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
     // The entire widget should be responsive to drags.
     return true;
@@ -221,4 +241,3 @@ class _InlineTabViewRenderObject extends RenderBox
 // TODO:
 // - context controller
 // - didChangeDependencies, didUpdateWidget
-// - semantics
