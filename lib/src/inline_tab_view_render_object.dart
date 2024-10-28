@@ -2,13 +2,24 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-import 'inline_tab_view_parent_data.dart';
+import 'package:inline_tab_view/src/inline_tab_view_parent_data.dart';
 
+/// A render object that displays a tab, animated its height, and allows
+/// dragging to switch tabs.
+///
+/// Interacts with a [TabController] to update tab bars ẃith the current scroll
+/// progress.
 class InlineTabViewRenderObject extends RenderBox
     with ContainerRenderObjectMixin<RenderBox, InlineTabViewParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, InlineTabViewParentData>
     implements HitTestTarget {
+  /// Create a render object that displays a tab, animated its height, and
+  /// allows dragging to switch tabs.
+  ///
+  /// The provided [controller] must be valid.
   InlineTabViewRenderObject(this._controller) {
+    assert(controller.animation != null, 'The TabController provided to '
+      '$runtimeType is no longer valid.');
     controller.animation!.addListener(markNeedsLayout);
   }
 
@@ -40,7 +51,7 @@ class InlineTabViewRenderObject extends RenderBox
 
   double get _exactIndex => controller.index + controller.offset;
 
-  RenderBox? childByIndex(int index) {
+  RenderBox? _childByIndex(int index) {
     // TODO: cache primary child and create specialized getter
     if (index < 0 || index >= childCount) return null;
     RenderBox? child = firstChild;
@@ -100,7 +111,7 @@ class InlineTabViewRenderObject extends RenderBox
   @override
   void performLayout() {
     // Since these 2 take the whole width, no other children need to be considered.
-    final RenderBox? selectedTab = childByIndex(_index);
+    final RenderBox? selectedTab = _childByIndex(_index);
     final RenderBox? nextTab = selectedTab != null ? childAfter(selectedTab) : null;
     final RenderBox? previousTab = selectedTab != null ? childBefore(selectedTab) : null;
 
@@ -121,7 +132,7 @@ class InlineTabViewRenderObject extends RenderBox
 
     if (scrollingToTab != null) {
       final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
-      double movePercent = controller.offset.abs();
+      final double movePercent = controller.offset.abs();
       assert(movePercent >= 0.0 && movePercent <= 1.0);
 
       final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
@@ -145,7 +156,7 @@ class InlineTabViewRenderObject extends RenderBox
     //print('size.width: ${size.width}, horizontalCenter: $horizontalCenter, horizontalOffset: $horizontalOffset');
     //print('_index: $_index, offset: $offset');
 
-    final primaryChild = childByIndex(_index)!;
+    final primaryChild = _childByIndex(_index)!;
     context.paintChild(primaryChild, Offset(
       horizontalDrawPosition - primaryChild.size.width / 2,
       offset.dy,
@@ -170,7 +181,7 @@ class InlineTabViewRenderObject extends RenderBox
 
   @override
   Rect? describeSemanticsClip(RenderBox? child) {
-    final idx = childByIndex(_index)!;
+    final idx = _childByIndex(_index)!;
     if (child == idx) {
       return null; // Same as paint clip
     }
@@ -179,7 +190,7 @@ class InlineTabViewRenderObject extends RenderBox
 
   @override
   void visitChildren(RenderObjectVisitor visitor) {
-    final idx = childByIndex(_index)!;
+    final idx = _childByIndex(_index)!;
     visitor(idx);
     if (controller.offset > 0) {
       assert(childAfter(idx) != null);
@@ -191,9 +202,11 @@ class InlineTabViewRenderObject extends RenderBox
   }
 
   @override
+  // ignore: prefer_expression_function_bodies
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
     // The entire widget should be responsive to drags.
     return true;
   }
 
 }
+// TODO: didChangeDependencies, didUpdateWidget

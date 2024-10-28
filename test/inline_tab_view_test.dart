@@ -9,7 +9,7 @@ void main() {
     addTearDown(controller.dispose);
     await tester.pumpWidget(InlineTabView(
       controller: controller,
-      tabs: const [
+      children: const [
         SizedBox(height: 100, width: 20),
         SizedBox(height: 200, width: 50),
       ],
@@ -27,7 +27,7 @@ void main() {
     addTearDown(controller.dispose);
     await tester.pumpWidget(InlineTabView(
       controller: controller,
-      tabs: [
+      children: [
         for(int i = 1; i <= 50; i++)
           SizedBox(height: 10 + 4.0 * i, width: 50),
       ],

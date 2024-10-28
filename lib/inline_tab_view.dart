@@ -1,26 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:inline_tab_view/src/inline_tab_view_widget.dart';
 
+/// A height adjusting widget switcher that displays the widget which
+/// corresponds to the currently selected tab.
+///
+/// If a [TabController] is not provided, then there must be a [DefaultTabController]
+/// ancestor.
+///
+/// The tab controller's [TabController.length] must equal the length of the
+/// [children] list and the length of the [TabBar.tabs] list.
 class InlineTabView extends StatelessWidget {
-  InlineTabView({super.key,
-    required this.controller,
-    required this.tabs
-  }) : assert(tabs.length == controller.length),
-       assert(controller.animation != null, 'invalid controller');
+  /// Create a height adjusting widget switcher that displays the widget which
+  /// corresponds to the currently selected tab.
+  const InlineTabView({super.key,
+    required this.children,
+    this.controller,
+    this.clipBehavior = Clip.hardEdge,
+  });
 
-  final TabController controller;
+  /// This widget's selection and animation state.
+  ///
+  /// If [TabController] is not provided, then the value of [DefaultTabController.of]
+  /// will be used.
+  final TabController? controller;
 
-  final List<Widget> tabs;
+  /// One widget per tab.
+  ///
+  /// Its length must match the length of the [TabBar.tabs]
+  /// list, as well as the [controller]'s [TabController.length].
+  final List<Widget> children;
+
+  /// The content will be clipped (or not) according to this option.
+  ///
+  /// See the enum Clip for details of all possible options and their common use
+  /// cases. Defaults to [Clip.hardEdge].
+  final Clip clipBehavior;
 
   @override
-  Widget build(BuildContext context) => ClipRect(
+  Widget build(BuildContext context) {
+    final TabController? controller = this.controller ?? DefaultTabController.maybeOf(context);
+
+    assert(controller != null,
+      'No TabController for $runtimeType.\n'
+      'When creating a $runtimeType, you must either provide an explicit '
+      'TabController using the "controller" property, or you must ensure that there '
+      'is a DefaultTabController above the $runtimeType.\n'
+      'In this case, there was neither an explicit controller nor a default controller.');
+    assert(controller!.animation != null, 'The TabController provided to '
+      '$runtimeType is no longer valid.');
+    assert(children.length == controller!.length, 'Child count of $runtimeType '
+      'does not match the provided tab controllers.');
+
+    return ClipRect(
+    clipBehavior: clipBehavior,
     child: InlineTabViewWidget(
-      controller: controller,
-      tabs: tabs,
+      controller: controller!,
+      children: children,
     ),
   );
+  }
 }
-
-// TODO:
-// - context controller / API
-// - didChangeDependencies, didUpdateWidget

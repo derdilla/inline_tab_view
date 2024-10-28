@@ -131,7 +131,7 @@ class _FormSwitcherState extends State<FormSwitcher>
         SizedBox(height: 8,),
         InlineTabView(
           controller: controller,
-          tabs: [
+          children: [
             for (final f in widget.subforms)
               f.$2,
           ],
