@@ -66,6 +66,7 @@ class InlineTabViewRenderObject extends RenderBox
   }
 
   void _attemptSnap() {
+    if (controller.indexIsChanging) return;
     final offset = controller.offset;
     if (offset.abs() > 0.2) {
       final newIndex = (_index + offset.sign).clamp(0, controller.length - 1);
@@ -125,15 +126,27 @@ class InlineTabViewRenderObject extends RenderBox
       return;
     }
 
-    final scrollingToTab = (_exactIndex == _index)
+    RenderBox? scrollingToTab = (_exactIndex == _index)
         ? null : ((_exactIndex > _index)
         ? nextTab
         : previousTab);
 
     if (scrollingToTab != null) {
       final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
-      final double movePercent = controller.offset.abs();
-      assert(movePercent >= 0.0 && movePercent <= 1.0);
+      double movePercent = controller.offset.abs();
+      // FIXME: can be > 1.0, when skipping multiple widgets
+      while (movePercent > 1.0 &&
+          ((_exactIndex > _index)
+              ? childAfter(scrollingToTab!)
+              : childBefore(scrollingToTab!)) != null) {
+        movePercent -= 1.0;
+        scrollingToTab = (_exactIndex > _index) // TODO: replace this duplicated lambda
+            ? childAfter(scrollingToTab)!
+            : childBefore(scrollingToTab)!;
+      }
+
+      assert(movePercent >= 0.0 && movePercent <= 1.0, '$movePercent out of '
+          'range. Expected 0-1');
 
       final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
       size = Size(constraints.maxWidth, newHeight);
@@ -190,21 +203,20 @@ class InlineTabViewRenderObject extends RenderBox
 
   @override
   void visitChildren(RenderObjectVisitor visitor) {
-    final idx = _childByIndex(_index)!;
-    visitor(idx);
-    if (controller.offset > 0) {
-      assert(childAfter(idx) != null);
-      visitor(childAfter(idx)!);
-    } else if (controller.offset < 0) {
-      assert(childBefore(idx) != null);
-      visitor(childBefore(idx)!);
+    RenderBox? child = firstChild;
+    while (child != null) {
+      visitor(child);
+      child = childAfter(child);
     }
   }
 
   @override
-  // ignore: prefer_expression_function_bodies
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
-    // The entire widget should be responsive to drags.
+    final idx = _childByIndex(_index)!;
+    // FIXME: pass correct position
+    idx.hitTest(result, position: position);
+    childAfter(idx)?.hitTest(result, position: position);
+    childBefore(idx)?.hitTest(result, position: position);
     return true;
   }
 

@@ -40,7 +40,41 @@ void main() {
     expect(find.byType(InlineTabView), findsOneWidget);
     expect(find.byType(SizedBox), findsNWidgets(50));
   });
+  testWidgets('shows selected widget', (tester) async {
+    final controller = TabController(length: 5, vsync: const TestVSync());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: InlineTabView(
+        controller: controller,
+        children: [
+          for(int i = 1; i <= 5; i++)
+            Text('Tab $i'),
+        ],
+      ),
+    ));
+
+    expect(find.text('Tab 1'), findsOneWidget);
+    expect(find.text('Tab 2'), findsNothing);
+    expect(find.text('Tab 3'), findsNothing);
+    expect(find.text('Tab 4'), findsNothing);
+    expect(find.text('Tab 5'), findsNothing);
+
+    controller.animateTo(3);
+    await tester.pumpAndSettle();
+    expect(find.text('Tab 1'), findsNothing);
+    expect(find.text('Tab 2'), findsNothing);
+    expect(find.text('Tab 3'), findsNothing);
+    expect(find.text('Tab 4'), findsOneWidget);
+    expect(find.text('Tab 5'), findsNothing);
+  });
   testWidgets('propagates semantics of selected widget', (tester) async {
+    fail('TODO: test');
     // TODO: extract to render object test
+  });
+  testWidgets('can jump multiple widgets', (tester) async  {
+    fail('TODO: test');
+  });
+  testWidgets("drag during animation doesn't throw", (tester) async  {
+    fail('TODO: test');
   });
 }
