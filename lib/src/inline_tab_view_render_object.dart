@@ -119,6 +119,10 @@ class InlineTabViewRenderObject extends RenderBox
     selectedTab?.layout(constraints, parentUsesSize: true);
     nextTab?.layout(constraints, parentUsesSize: true);
     previousTab?.layout(constraints, parentUsesSize: true);
+    visitChildren((RenderObject child) {
+      if (child == selectedTab || child == nextTab || child == previousTab) return;
+      child.layout(constraints);
+    });
 
     if (selectedTab == null) {
       size = constraints.smallest;

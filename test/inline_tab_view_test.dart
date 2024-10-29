@@ -67,10 +67,6 @@ void main() {
     expect(find.text('Tab 4'), findsOneWidget);
     expect(find.text('Tab 5'), findsNothing);
   });
-  testWidgets('propagates semantics of selected widget', (tester) async {
-    fail('TODO: test');
-    // TODO: extract to render object test
-  });
   testWidgets('can jump multiple widgets', (tester) async  {
     fail('TODO: test');
   });
