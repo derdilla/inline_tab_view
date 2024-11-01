@@ -161,15 +161,20 @@ class InlineTabViewRenderObject extends RenderBox
     markNeedsPaint();
   }
 
+  /// The horizontal center of the primary child.
+  double get _relativeCentralDrawPosition {
+    final horizontalCenter = size.width / 2;
+    final horizontalOffset = - controller.offset * size.width;
+    return horizontalCenter + horizontalOffset;
+  }
+
   @override
   void paint(PaintingContext context, Offset offset) {
     // The selected child aligns widgets to the top and takes the entire width.
     // When switching between children the view gets offset by a percentage of
     // the constraints (the tabController offset conveniently is in [-1.0,1.0].
 
-    final horizontalCenter = size.width / 2;
-    final horizontalOffset = - controller.offset * size.width;
-    final horizontalDrawPosition = offset.dx + horizontalCenter + horizontalOffset;
+    final horizontalDrawPosition = offset.dx + _relativeCentralDrawPosition;
     //print('size.width: ${size.width}, horizontalCenter: $horizontalCenter, horizontalOffset: $horizontalOffset');
     //print('_index: $_index, offset: $offset');
 
@@ -215,6 +220,25 @@ class InlineTabViewRenderObject extends RenderBox
   }
 
   @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    final primaryChild = _childByIndex(_index)!;
+    final nextChild = childAfter(primaryChild);
+    final previousChild = childBefore(primaryChild);
+
+    final primaryLeftBorder = _relativeCentralDrawPosition - (primaryChild.size.width / 2);
+    final primaryRightBorder = _relativeCentralDrawPosition + (primaryChild.size.width / 2);
+
+    if (primaryRightBorder > 0.0
+        && primaryLeftBorder < size.width) visitor(primaryChild);
+    if (nextChild != null
+        && primaryRightBorder + size.width > 0.0
+        && primaryLeftBorder + size.width < size.width) visitor(nextChild);
+    if (previousChild != null
+        && primaryRightBorder - size.width > 0.0
+        && primaryLeftBorder - size.width < size.width) visitor(previousChild);
+  }
+
+  @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
     final idx = _childByIndex(_index)!;
     // FIXME: pass correct position
@@ -223,6 +247,9 @@ class InlineTabViewRenderObject extends RenderBox
     childBefore(idx)?.hitTest(result, position: position);
     return true;
   }
+
+  @override
+  bool hitTestSelf(Offset position) => size.contains(position);
 
 }
 // TODO: didChangeDependencies, didUpdateWidget
