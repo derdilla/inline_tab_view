@@ -19,7 +19,7 @@ class InlineTabViewRenderObject extends RenderBox
   /// The provided [controller] must be valid.
   InlineTabViewRenderObject(this._controller) {
     assert(controller.animation != null, 'The TabController provided to '
-      '$runtimeType is no longer valid.');
+        '$runtimeType is no longer valid.');
     controller.animation!.addListener(markNeedsLayout);
   }
 
@@ -166,6 +166,7 @@ class InlineTabViewRenderObject extends RenderBox
     final horizontalCenter = size.width / 2;
     final horizontalOffset = - controller.offset * size.width;
     return horizontalCenter + horizontalOffset;
+
   }
 
   @override
@@ -240,16 +241,30 @@ class InlineTabViewRenderObject extends RenderBox
 
   @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
-    final idx = _childByIndex(_index)!;
-    // FIXME: pass correct position
-    idx.hitTest(result, position: position);
-    childAfter(idx)?.hitTest(result, position: position);
-    childBefore(idx)?.hitTest(result, position: position);
-    return true;
+    final primaryChild = _childByIndex(_index)!;
+    final nextChild = childAfter(primaryChild);
+    final previousChild = childBefore(primaryChild);
+
+    final bool primary = primaryChild.hitTest(result, position: Offset(
+      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2),
+      position.dy,
+    ));
+    final bool? next = nextChild?.hitTest(result, position: Offset(
+      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2) + size.width,
+      position.dy,
+    ));
+    final bool? previous = previousChild?.hitTest(result, position: Offset(
+      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2) - size.width,
+      position.dy,
+    ));
+    return primary || (next ?? false) || (previous ?? false);
   }
 
   @override
   bool hitTestSelf(Offset position) => size.contains(position);
-
 }
+
 // TODO: didChangeDependencies, didUpdateWidget
+
+// TODO: abstract layouting logic used by performLayout, paint,
+//       hitTestChildren, and visitChildrenForSemantics
