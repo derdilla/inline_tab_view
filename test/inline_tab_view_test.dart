@@ -214,9 +214,13 @@ void main() {
     await tester.pump();
     expect(tester.takeException(), isNull);
 
+    await tester.pump(Duration(milliseconds: 500));
+    await gesture.up();
+    expect(tester.takeException(), isNull);
+
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-  }, skip: true); // FIXME
+  });
   testWidgets("animation during drag doesn't throw", (tester) async  {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);

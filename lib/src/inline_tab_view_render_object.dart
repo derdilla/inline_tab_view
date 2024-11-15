@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -81,10 +82,11 @@ class InlineTabViewRenderObject extends RenderBox
 
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    assert(debugHandleEvent(event, entry));
+    if (kDebugMode) debugHandleEvent(event, entry);
+
     if (event is PointerDownEvent) {
       _dragStartPos = event.position.dx;
-    } else if (event is PointerUpEvent) {
+    } else if (event is PointerUpEvent) { // TODO: consider pointer cancel event
       _attemptSnap();
       _dragStartPos = null;
       markNeedsLayout();
@@ -98,7 +100,7 @@ class InlineTabViewRenderObject extends RenderBox
       if (controller.index == 0 && offset < 0
           || controller.index == (controller.length - 1) && offset > 0) offset = 0;
 
-      controller.offset = offset;
+      if (!controller.indexIsChanging) controller.offset = offset;
       markNeedsPaint();
     }
   }

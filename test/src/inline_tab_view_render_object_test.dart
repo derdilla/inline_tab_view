@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inline_tab_view/inline_tab_view.dart';
 import 'package:inline_tab_view/src/inline_tab_view_render_object.dart';
 
 void main() {
