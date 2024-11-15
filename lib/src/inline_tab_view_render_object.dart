@@ -138,7 +138,6 @@ class InlineTabViewRenderObject extends RenderBox
     if (scrollingToTab != null) {
       final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
       double movePercent = controller.offset.abs();
-      // FIXME: can be > 1.0, when skipping multiple widgets
       while (movePercent > 1.0 &&
           ((_exactIndex > _index)
               ? childAfter(scrollingToTab!)
@@ -209,15 +208,6 @@ class InlineTabViewRenderObject extends RenderBox
       return null; // Same as paint clip
     }
     return const Rect.fromLTRB(-1, -1, -1, -1); // Drop semantics
-  }
-
-  @override
-  void visitChildren(RenderObjectVisitor visitor) {
-    RenderBox? child = firstChild;
-    while (child != null) {
-      visitor(child);
-      child = childAfter(child);
-    }
   }
 
   @override
