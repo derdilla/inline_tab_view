@@ -234,8 +234,8 @@ class InlineTabViewRenderObject extends RenderBox
   @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
     final primaryChild = _childByIndex(_index)!;
-    final nextChild = childAfter(primaryChild);
-    final previousChild = childBefore(primaryChild);
+    final nextChild = controller.offset == 0.0 ? null : childAfter(primaryChild);
+    final previousChild = controller.offset == 0.0 ? null : childBefore(primaryChild);
 
     final bool primary = primaryChild.hitTest(result, position: Offset(
       position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2),

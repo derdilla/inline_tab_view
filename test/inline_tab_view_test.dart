@@ -254,4 +254,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+  testWidgets("tester doesn't find hidden children", (tester) async  {
+    final controller = TabController(length: 2, vsync: const TestVSync());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: InlineTabView(
+        controller: controller,
+        children: [
+          Text('Tab 1'),
+          Text('Tab 2'),
+        ],
+      ),
+    ));
+
+    expect(find.text('Tab 1'), findsOneWidget);
+    expect(find.text('Tab 2'), findsNothing);
+  });
 }
