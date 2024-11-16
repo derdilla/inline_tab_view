@@ -1,6 +1,6 @@
 A inlineable TabBarView animating height taken by the widget without hacks. Creates a custom render object that mimics the default [TabBarView](https://api.flutter.dev/flutter/material/TabBarView-class.html) behavior that does not try to take up the entire available height.
 
-![Showcase](docs/showcase.webm)
+[<img src="asset/showcase.gif" height="200"/>](asset/showcase.webm)
 
 This avoids hacky tricks like detecting the child height during widget build and allows for smooth animation. With this focus on quality full test coverage and documentation is provided.
 
