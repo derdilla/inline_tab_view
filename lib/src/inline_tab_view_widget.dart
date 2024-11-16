@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:inline_tab_view/inline_tab_view.dart';
-import 'package:inline_tab_view/src/inline_tab_view_element.dart';
 import 'package:inline_tab_view/src/inline_tab_view_render_object.dart';
 
 /// A widget that uses the [InlineTabViewRenderObject].

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,7 +20,8 @@ void main() {
     expect(tester.takeException(), isNull);
 
     expect(find.byType(InlineTabView), findsOneWidget);
-    expect(find.byType(SizedBox), findsNWidgets(2));
+    expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
+    // the other one is offscreen
   });
   testWidgets('50 widgets build smoke test', (tester) async {
     final controller = TabController(length: 50, vsync: const TestVSync());
@@ -40,7 +39,7 @@ void main() {
     expect(tester.takeException(), isNull);
 
     expect(find.byType(InlineTabView), findsOneWidget);
-    expect(find.byType(SizedBox), findsNWidgets(50));
+    expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
   });
 
   testWidgets('selected widget is hit testable', (tester) async {

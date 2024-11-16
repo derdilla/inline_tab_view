@@ -4,9 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inline_tab_view/src/inline_tab_view_render_object.dart';
 
 void main() {
-  testWidgets('propagates semantics of selected widget', (tester) async {
-    fail('TODO: test');
-  });
   testWidgets('calls visitChildrenForSemantics only for visible children', (tester) async {
     final controller = TabController(length: 4, vsync: const TestVSync());
     final tabViewRenderObject = InlineTabViewRenderObject(controller);

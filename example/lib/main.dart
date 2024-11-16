@@ -115,9 +115,6 @@ class _FormSwitcherState extends State<FormSwitcher>
   @override
   Widget build(BuildContext context) {
     assert(widget.subforms.isNotEmpty);
-    if (widget.subforms.length == 1) {
-      return widget.subforms[0].$2;
-    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
