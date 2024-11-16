@@ -1,0 +1,53 @@
+name: '⚙️ CI'
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    strategy:
+      matrix:
+        channel:
+          - beta
+          - stable
+    name: 'Testing [${{matrix.channel}}] 🧪'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ matrix.channel }}
+          cache: true
+      - run: flutter config --no-analytics --suppress-analytics
+      - name: Package tests
+        run: flutter test
+      - name: Example tests
+        run: flutter test
+        working-directory: example
+  dart-lints:
+    name: 'Linting 📝'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter config --no-analytics --suppress-analytics
+      - name: "Package lints"
+        run: flutter analyze
+      - name: "Example lints"
+        run: flutter analyze
+        working-directory: example
+  dart-format:
+    name: "Formating ✅"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - name: "Package format"
+        run: dart format --output show --set-exit-if-changed .
+      - name: "Example format"
+        run: dart format --output show --set-exit-if-changed example

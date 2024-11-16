@@ -10,23 +10,29 @@ class InlineTabViewWidget extends MultiChildRenderObjectWidget {
   /// Create a widget that uses the [InlineTabViewRenderObject].
   ///
   /// Consider using [InlineTabView] instead.
-  InlineTabViewWidget({super.key,
+  InlineTabViewWidget({
+    super.key,
     required this.controller,
     required super.children,
-  }): assert(controller.animation != null, 'The TabController provided to '
-      'InlineTabViewWidget is no longer valid.'),
-    assert(children.length == controller.length, 'Child count of '
-      'InlineTabViewWidget does not match the provided tab controllers.');
+  })  : assert(
+            controller.animation != null,
+            'The TabController provided to '
+            'InlineTabViewWidget is no longer valid.'),
+        assert(
+            children.length == controller.length,
+            'Child count of '
+            'InlineTabViewWidget does not match the provided tab controllers.');
 
   /// A valid tab controller whose length matches [children]'s.
   final TabController controller;
 
   @override
   InlineTabViewRenderObject createRenderObject(BuildContext context) =>
-    InlineTabViewRenderObject(controller);
+      InlineTabViewRenderObject(controller);
 
   @override
-  void updateRenderObject(BuildContext context, InlineTabViewRenderObject renderObject) {
+  void updateRenderObject(
+      BuildContext context, InlineTabViewRenderObject renderObject) {
     renderObject.controller = controller;
   }
 
@@ -47,5 +53,4 @@ class _InlineTabViewElement extends MultiChildRenderObjectElement {
         .where((Element e) => renderObjectChildren.contains(e.renderObject))
         .forEach(visitor);
   }
-
 }

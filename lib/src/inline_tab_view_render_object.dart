@@ -11,7 +11,8 @@ import 'package:inline_tab_view/src/inline_tab_view_parent_data.dart';
 /// Interacts with a [TabController] to update tab bars ẃith the current scroll
 /// progress.
 class InlineTabViewRenderObject extends RenderBox
-    with ContainerRenderObjectMixin<RenderBox, InlineTabViewParentData>,
+    with
+        ContainerRenderObjectMixin<RenderBox, InlineTabViewParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, InlineTabViewParentData>
     implements HitTestTarget {
   /// Create a render object that displays a tab, animated its height, and
@@ -19,7 +20,9 @@ class InlineTabViewRenderObject extends RenderBox
   ///
   /// The provided [controller] must be valid.
   InlineTabViewRenderObject(this._controller) {
-    assert(controller.animation != null, 'The TabController provided to '
+    assert(
+        controller.animation != null,
+        'The TabController provided to '
         '$runtimeType is no longer valid.');
     controller.animation!.addListener(markNeedsLayout);
   }
@@ -86,19 +89,20 @@ class InlineTabViewRenderObject extends RenderBox
 
     if (event is PointerDownEvent) {
       _dragStartPos = event.position.dx;
-    } else if (event is PointerUpEvent) { // TODO: consider pointer cancel event
+    } else if (event is PointerUpEvent) {
+      // TODO: consider pointer cancel event
       _attemptSnap();
       _dragStartPos = null;
       markNeedsLayout();
     } else if (event is PointerMoveEvent) {
       final delta = event.position.dx - _dragStartPos!;
       double offset = delta / size.width;
-      offset = - offset;
+      offset = -offset;
       assert(offset >= -1.0 && offset <= 1.0);
 
       // avoid oob scroll
-      if (controller.index == 0 && offset < 0
-          || controller.index == (controller.length - 1) && offset > 0) offset = 0;
+      if (controller.index == 0 && offset < 0 ||
+          controller.index == (controller.length - 1) && offset > 0) offset = 0;
 
       if (!controller.indexIsChanging) controller.offset = offset;
       markNeedsPaint();
@@ -115,14 +119,17 @@ class InlineTabViewRenderObject extends RenderBox
   void performLayout() {
     // Since these 2 take the whole width, no other children need to be considered.
     final RenderBox? selectedTab = _childByIndex(_index);
-    final RenderBox? nextTab = selectedTab != null ? childAfter(selectedTab) : null;
-    final RenderBox? previousTab = selectedTab != null ? childBefore(selectedTab) : null;
+    final RenderBox? nextTab =
+        selectedTab != null ? childAfter(selectedTab) : null;
+    final RenderBox? previousTab =
+        selectedTab != null ? childBefore(selectedTab) : null;
 
     selectedTab?.layout(constraints, parentUsesSize: true);
     nextTab?.layout(constraints, parentUsesSize: true);
     previousTab?.layout(constraints, parentUsesSize: true);
     visitChildren((RenderObject child) {
-      if (child == selectedTab || child == nextTab || child == previousTab) return;
+      if (child == selectedTab || child == nextTab || child == previousTab)
+        return;
       child.layout(constraints);
     });
 
@@ -133,24 +140,28 @@ class InlineTabViewRenderObject extends RenderBox
     }
 
     RenderBox? scrollingToTab = (_exactIndex == _index)
-        ? null : ((_exactIndex > _index)
-        ? nextTab
-        : previousTab);
+        ? null
+        : ((_exactIndex > _index) ? nextTab : previousTab);
 
     if (scrollingToTab != null) {
-      final totalHeightDiff = scrollingToTab.size.height - selectedTab.size.height;
+      final totalHeightDiff =
+          scrollingToTab.size.height - selectedTab.size.height;
       double movePercent = controller.offset.abs();
       while (movePercent > 1.0 &&
           ((_exactIndex > _index)
-              ? childAfter(scrollingToTab!)
-              : childBefore(scrollingToTab!)) != null) {
+                  ? childAfter(scrollingToTab!)
+                  : childBefore(scrollingToTab!)) !=
+              null) {
         movePercent -= 1.0;
-        scrollingToTab = (_exactIndex > _index) // TODO: replace this duplicated lambda
-            ? childAfter(scrollingToTab)!
-            : childBefore(scrollingToTab)!;
+        scrollingToTab =
+            (_exactIndex > _index) // TODO: replace this duplicated lambda
+                ? childAfter(scrollingToTab)!
+                : childBefore(scrollingToTab)!;
       }
 
-      assert(movePercent >= 0.0 && movePercent <= 1.0, '$movePercent out of '
+      assert(
+          movePercent >= 0.0 && movePercent <= 1.0,
+          '$movePercent out of '
           'range. Expected 0-1');
 
       final newHeight = selectedTab.size.height + movePercent * totalHeightDiff;
@@ -165,9 +176,8 @@ class InlineTabViewRenderObject extends RenderBox
   /// The horizontal center of the primary child.
   double get _relativeCentralDrawPosition {
     final horizontalCenter = size.width / 2;
-    final horizontalOffset = - controller.offset * size.width;
+    final horizontalOffset = -controller.offset * size.width;
     return horizontalCenter + horizontalOffset;
-
   }
 
   @override
@@ -181,25 +191,31 @@ class InlineTabViewRenderObject extends RenderBox
     //print('_index: $_index, offset: $offset');
 
     final primaryChild = _childByIndex(_index)!;
-    context.paintChild(primaryChild, Offset(
-      horizontalDrawPosition - primaryChild.size.width / 2,
-      offset.dy,
-    ));
+    context.paintChild(
+        primaryChild,
+        Offset(
+          horizontalDrawPosition - primaryChild.size.width / 2,
+          offset.dy,
+        ));
 
     // Render child before and after, potentially oob to simplify scrolling
     final nextChild = childAfter(primaryChild);
     final previousChild = childBefore(primaryChild);
     if (nextChild != null) {
-      context.paintChild(nextChild, Offset(
-        horizontalDrawPosition + size.width - nextChild.size.width / 2,
-        offset.dy,
-      ));
+      context.paintChild(
+          nextChild,
+          Offset(
+            horizontalDrawPosition + size.width - nextChild.size.width / 2,
+            offset.dy,
+          ));
     }
     if (previousChild != null) {
-      context.paintChild(previousChild, Offset(
-        horizontalDrawPosition - size.width - previousChild.size.width / 2,
-        offset.dy,
-      ));
+      context.paintChild(
+          previousChild,
+          Offset(
+            horizontalDrawPosition - size.width - previousChild.size.width / 2,
+            offset.dy,
+          ));
     }
   }
 
@@ -218,37 +234,52 @@ class InlineTabViewRenderObject extends RenderBox
     final nextChild = childAfter(primaryChild);
     final previousChild = childBefore(primaryChild);
 
-    final primaryLeftBorder = _relativeCentralDrawPosition - (primaryChild.size.width / 2);
-    final primaryRightBorder = _relativeCentralDrawPosition + (primaryChild.size.width / 2);
+    final primaryLeftBorder =
+        _relativeCentralDrawPosition - (primaryChild.size.width / 2);
+    final primaryRightBorder =
+        _relativeCentralDrawPosition + (primaryChild.size.width / 2);
 
-    if (primaryRightBorder > 0.0
-        && primaryLeftBorder < size.width) visitor(primaryChild);
-    if (nextChild != null
-        && primaryRightBorder + size.width > 0.0
-        && primaryLeftBorder + size.width < size.width) visitor(nextChild);
-    if (previousChild != null
-        && primaryRightBorder - size.width > 0.0
-        && primaryLeftBorder - size.width < size.width) visitor(previousChild);
+    if (primaryRightBorder > 0.0 && primaryLeftBorder < size.width)
+      visitor(primaryChild);
+    if (nextChild != null &&
+        primaryRightBorder + size.width > 0.0 &&
+        primaryLeftBorder + size.width < size.width) visitor(nextChild);
+    if (previousChild != null &&
+        primaryRightBorder - size.width > 0.0 &&
+        primaryLeftBorder - size.width < size.width) visitor(previousChild);
   }
 
   @override
-  bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
     final primaryChild = _childByIndex(_index)!;
-    final nextChild = controller.offset == 0.0 ? null : childAfter(primaryChild);
-    final previousChild = controller.offset == 0.0 ? null : childBefore(primaryChild);
+    final nextChild =
+        controller.offset == 0.0 ? null : childAfter(primaryChild);
+    final previousChild =
+        controller.offset == 0.0 ? null : childBefore(primaryChild);
 
-    final bool primary = primaryChild.hitTest(result, position: Offset(
-      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2),
-      position.dy,
-    ));
-    final bool? next = nextChild?.hitTest(result, position: Offset(
-      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2) + size.width,
-      position.dy,
-    ));
-    final bool? previous = previousChild?.hitTest(result, position: Offset(
-      position.dx - _relativeCentralDrawPosition + (primaryChild.size.width / 2) - size.width,
-      position.dy,
-    ));
+    final bool primary = primaryChild.hitTest(result,
+        position: Offset(
+          position.dx -
+              _relativeCentralDrawPosition +
+              (primaryChild.size.width / 2),
+          position.dy,
+        ));
+    final bool? next = nextChild?.hitTest(result,
+        position: Offset(
+          position.dx -
+              _relativeCentralDrawPosition +
+              (primaryChild.size.width / 2) +
+              size.width,
+          position.dy,
+        ));
+    final bool? previous = previousChild?.hitTest(result,
+        position: Offset(
+          position.dx -
+              _relativeCentralDrawPosition +
+              (primaryChild.size.width / 2) -
+              size.width,
+          position.dy,
+        ));
     return primary || (next ?? false) || (previous ?? false);
   }
 

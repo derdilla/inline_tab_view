@@ -29,8 +29,7 @@ void main() {
     await tester.pumpWidget(InlineTabView(
       controller: controller,
       children: [
-        for(int i = 1; i <= 50; i++)
-          SizedBox(height: 10 + 4.0 * i, width: 50),
+        for (int i = 1; i <= 50; i++) SizedBox(height: 10 + 4.0 * i, width: 50),
       ],
     ));
     expect(tester.takeException(), isNull);
@@ -49,8 +48,7 @@ void main() {
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -70,17 +68,23 @@ void main() {
     expect(find.text('Tab 4').hitTestable(), findsOneWidget);
     expect(find.text('Tab 5').hitTestable(), findsNothing);
   });
-  testWidgets('children visible during drag are hit testable', (tester) async  {
+  testWidgets('children visible during drag are hit testable', (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
+          for (int i = 1; i <= 5; i++)
             ColoredBox(
               key: Key('$i'),
-              color: [Colors.red, Colors.green, Colors.blue, Colors.yellow, Colors.purple][i-1],
+              color: [
+                Colors.red,
+                Colors.green,
+                Colors.blue,
+                Colors.yellow,
+                Colors.purple
+              ][i - 1],
               child: Text('Tab $i'),
             ),
         ],
@@ -104,18 +108,18 @@ void main() {
     await tester.pump();
 
     // TODO: shouldn't left and right be switched ??
-    expect(find.byKey(Key('1')).hitTestable(at: Alignment.topLeft), findsOneWidget);
+    expect(find.byKey(Key('1')).hitTestable(at: Alignment.topLeft),
+        findsOneWidget);
     // expect(find.byKey(Key('2')).hitTestable(at: Alignment.topRight), findsOneWidget); // FIXME
   });
-  testWidgets('hidden children are never hit testable', (tester) async  {
+  testWidgets('hidden children are never hit testable', (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -136,15 +140,14 @@ void main() {
     expect(find.text('Tab 5').hitTestable(), findsNothing);
   });
 
-  testWidgets('can jump multiple widgets', (tester) async  {
+  testWidgets('can jump multiple widgets', (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -156,15 +159,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-  testWidgets("drag start during animation doesn't throw", (tester) async  {
+  testWidgets("drag start during animation doesn't throw", (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -185,15 +187,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-  testWidgets("drag during animation doesn't throw", (tester) async  {
+  testWidgets("drag during animation doesn't throw", (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -220,15 +221,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-  testWidgets("animation during drag doesn't throw", (tester) async  {
+  testWidgets("animation during drag doesn't throw", (tester) async {
     final controller = TabController(length: 5, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(
       home: InlineTabView(
         controller: controller,
         children: [
-          for(int i = 1; i <= 5; i++)
-            Text('Tab $i'),
+          for (int i = 1; i <= 5; i++) Text('Tab $i'),
         ],
       ),
     ));
@@ -253,7 +253,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-  testWidgets("tester doesn't find hidden children", (tester) async  {
+  testWidgets("tester doesn't find hidden children", (tester) async {
     final controller = TabController(length: 2, vsync: const TestVSync());
     addTearDown(controller.dispose);
     await tester.pumpWidget(MaterialApp(

@@ -12,7 +12,8 @@ import 'package:inline_tab_view/src/inline_tab_view_widget.dart';
 class InlineTabView extends StatelessWidget {
   /// Create a height adjusting widget switcher that displays the widget which
   /// corresponds to the currently selected tab.
-  const InlineTabView({super.key,
+  const InlineTabView({
+    super.key,
     required this.children,
     this.controller,
     this.clipBehavior = Clip.hardEdge,
@@ -38,25 +39,31 @@ class InlineTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TabController? controller = this.controller ?? DefaultTabController.maybeOf(context);
+    final TabController? controller =
+        this.controller ?? DefaultTabController.maybeOf(context);
 
-    assert(controller != null,
-      'No TabController for $runtimeType.\n'
-      'When creating a $runtimeType, you must either provide an explicit '
-      'TabController using the "controller" property, or you must ensure that there '
-      'is a DefaultTabController above the $runtimeType.\n'
-      'In this case, there was neither an explicit controller nor a default controller.');
-    assert(controller!.animation != null, 'The TabController provided to '
-      '$runtimeType is no longer valid.');
-    assert(children.length == controller!.length, 'Child count of $runtimeType '
-      'does not match the provided tab controllers.');
+    assert(
+        controller != null,
+        'No TabController for $runtimeType.\n'
+        'When creating a $runtimeType, you must either provide an explicit '
+        'TabController using the "controller" property, or you must ensure that there '
+        'is a DefaultTabController above the $runtimeType.\n'
+        'In this case, there was neither an explicit controller nor a default controller.');
+    assert(
+        controller!.animation != null,
+        'The TabController provided to '
+        '$runtimeType is no longer valid.');
+    assert(
+        children.length == controller!.length,
+        'Child count of $runtimeType '
+        'does not match the provided tab controllers.');
 
     return ClipRect(
-    clipBehavior: clipBehavior,
-    child: InlineTabViewWidget(
-      controller: controller!,
-      children: children,
-    ),
-  );
+      clipBehavior: clipBehavior,
+      child: InlineTabViewWidget(
+        controller: controller!,
+        children: children,
+      ),
+    );
   }
 }
