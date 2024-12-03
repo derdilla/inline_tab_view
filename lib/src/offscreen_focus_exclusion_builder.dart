@@ -31,8 +31,16 @@ class _OffscreenFocusExclusionBuilderState extends State<OffscreenFocusExclusion
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(() => setState((){}));
+    widget.controller.addListener(markNeedsRebuild);
   }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(markNeedsRebuild);
+    super.dispose();
+  }
+
+  void markNeedsRebuild() => setState((){});
   
   @override
   Widget build(BuildContext context) {
