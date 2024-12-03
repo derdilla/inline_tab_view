@@ -93,7 +93,6 @@ class InlineTabViewRenderObject extends RenderBox
       // TODO: consider pointer cancel event
       _attemptSnap();
       _dragStartPos = null;
-      markNeedsLayout();
     } else if (event is PointerMoveEvent) {
       final delta = event.position.dx - _dragStartPos!;
       double offset = delta / size.width;

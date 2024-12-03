@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inline_tab_view/src/inline_tab_view_widget.dart';
+import 'package:inline_tab_view/src/offscreen_focus_exclusion_builder.dart';
 
 /// A height adjusting widget switcher that displays the widget which
 /// corresponds to the currently selected tab.
@@ -60,9 +61,13 @@ class InlineTabView extends StatelessWidget {
 
     return ClipRect(
       clipBehavior: clipBehavior,
-      child: InlineTabViewWidget(
+      child: OffscreenFocusExclusionBuilder(
         controller: controller!,
         children: children,
+        builder: (List<Widget> children) => InlineTabViewWidget(
+          controller: controller,
+          children: children,
+        ),
       ),
     );
   }
