@@ -28,23 +28,51 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Column(
         children: [
-          Focus(key: Key('leading'), focusNode: leadingFocus, child: SizedBox.square(dimension: 10)),
+          Focus(
+              key: Key('leading'),
+              focusNode: leadingFocus,
+              child: SizedBox.square(dimension: 10)),
           InlineTabView(
             controller: controller,
             children: [
-              Column(children: [
-                Focus(key: Key('Tab 1 - 1'), focusNode: tab1Wid1Focus, child: SizedBox.square(dimension: 10)),
-                Focus(key: Key('Tab 1 - 2'), focusNode: tab1Wid2Focus, child: SizedBox.square(dimension: 10)),
-                Focus(key: Key('Tab 1 - 3'), focusNode: tab1Wid3Focus, child: SizedBox.square(dimension: 10)),
-              ],),
-              Column(children: [
-                Focus(key: Key('Tab 2 - 1'), focusNode: tab2Wid1Focus, child: SizedBox.square(dimension: 10)),
-                Focus(key: Key('Tab 2 - 2'), focusNode: tab2Wid2Focus, child: SizedBox.square(dimension: 10)),
-                Focus(key: Key('Tab 2 - 3'), focusNode: tab2Wid3Focus, child: SizedBox.square(dimension: 10)),
-              ],)
+              Column(
+                children: [
+                  Focus(
+                      key: Key('Tab 1 - 1'),
+                      focusNode: tab1Wid1Focus,
+                      child: SizedBox.square(dimension: 10)),
+                  Focus(
+                      key: Key('Tab 1 - 2'),
+                      focusNode: tab1Wid2Focus,
+                      child: SizedBox.square(dimension: 10)),
+                  Focus(
+                      key: Key('Tab 1 - 3'),
+                      focusNode: tab1Wid3Focus,
+                      child: SizedBox.square(dimension: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  Focus(
+                      key: Key('Tab 2 - 1'),
+                      focusNode: tab2Wid1Focus,
+                      child: SizedBox.square(dimension: 10)),
+                  Focus(
+                      key: Key('Tab 2 - 2'),
+                      focusNode: tab2Wid2Focus,
+                      child: SizedBox.square(dimension: 10)),
+                  Focus(
+                      key: Key('Tab 2 - 3'),
+                      focusNode: tab2Wid3Focus,
+                      child: SizedBox.square(dimension: 10)),
+                ],
+              )
             ],
           ),
-          Focus(key: Key('trailing'), focusNode: trailingFocus, child: SizedBox.square(dimension: 10)),
+          Focus(
+              key: Key('trailing'),
+              focusNode: trailingFocus,
+              child: SizedBox.square(dimension: 10)),
         ],
       ),
     ));

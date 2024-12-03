@@ -24,10 +24,12 @@ class OffscreenFocusExclusionBuilder extends StatefulWidget {
   final Widget Function(List<Widget> children) builder;
 
   @override
-  State<OffscreenFocusExclusionBuilder> createState() => _OffscreenFocusExclusionBuilderState();
+  State<OffscreenFocusExclusionBuilder> createState() =>
+      _OffscreenFocusExclusionBuilderState();
 }
 
-class _OffscreenFocusExclusionBuilderState extends State<OffscreenFocusExclusionBuilder> {
+class _OffscreenFocusExclusionBuilderState
+    extends State<OffscreenFocusExclusionBuilder> {
   @override
   void initState() {
     super.initState();
@@ -40,11 +42,12 @@ class _OffscreenFocusExclusionBuilderState extends State<OffscreenFocusExclusion
     super.dispose();
   }
 
-  void markNeedsRebuild() => setState((){});
-  
+  void markNeedsRebuild() => setState(() {});
+
   @override
   Widget build(BuildContext context) {
-    if (widget.controller.indexIsChanging) return ExcludeFocus(child: widget.builder(widget.children));
+    if (widget.controller.indexIsChanging)
+      return ExcludeFocus(child: widget.builder(widget.children));
     return widget.builder([
       for (int i = 0; i < widget.children.length; i++)
         ExcludeFocus(
