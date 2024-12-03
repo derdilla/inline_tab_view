@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Only allow focus of the visible widget and block focus during animation by
 /// wrapping children in [ExcludeFocus].
-class OffscreenFocusExclusionBuilder extends StatefulWidget {
+class OffscreenFocusExclusionBuilder extends StatelessWidget {
   /// Only allow focus of the visible widget and block focus during animation.
   const OffscreenFocusExclusionBuilder({
     super.key,
@@ -24,36 +24,18 @@ class OffscreenFocusExclusionBuilder extends StatefulWidget {
   final Widget Function(List<Widget> children) builder;
 
   @override
-  State<OffscreenFocusExclusionBuilder> createState() =>
-      _OffscreenFocusExclusionBuilderState();
-}
-
-class _OffscreenFocusExclusionBuilderState
-    extends State<OffscreenFocusExclusionBuilder> {
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(markNeedsRebuild);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(markNeedsRebuild);
-    super.dispose();
-  }
-
-  void markNeedsRebuild() => setState(() {});
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.controller.indexIsChanging)
-      return ExcludeFocus(child: widget.builder(widget.children));
-    return widget.builder([
-      for (int i = 0; i < widget.children.length; i++)
-        ExcludeFocus(
-          excluding: i != widget.controller.index,
-          child: widget.children[i],
-        )
-    ]);
-  }
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: controller,
+        builder: (BuildContext context, Widget? _child) {
+          if (controller.indexIsChanging)
+            return ExcludeFocus(child: builder(children));
+          return builder([
+            for (int i = 0; i < children.length; i++)
+              ExcludeFocus(
+                excluding: i != controller.index,
+                child: children[i],
+              )
+          ]);
+        },
+      );
 }
