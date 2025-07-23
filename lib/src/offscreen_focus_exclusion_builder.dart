@@ -26,9 +26,10 @@ class OffscreenFocusExclusionBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
         listenable: controller,
-        builder: (BuildContext context, Widget? _child) {
-          if (controller.indexIsChanging)
+        builder: (BuildContext context, Widget? _) {
+          if (controller.indexIsChanging) {
             return ExcludeFocus(child: builder(children));
+          }
           return builder([
             for (int i = 0; i < children.length; i++)
               ExcludeFocus(
