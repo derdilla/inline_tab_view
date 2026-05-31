@@ -101,7 +101,9 @@ class InlineTabViewRenderObject extends RenderBox
 
       // avoid oob scroll
       if (controller.index == 0 && offset < 0 ||
-          controller.index == (controller.length - 1) && offset > 0) offset = 0;
+          controller.index == (controller.length - 1) && offset > 0) {
+        offset = 0;
+      }
 
       if (!controller.indexIsChanging) controller.offset = offset;
       markNeedsPaint();
@@ -127,8 +129,9 @@ class InlineTabViewRenderObject extends RenderBox
     nextTab?.layout(constraints, parentUsesSize: true);
     previousTab?.layout(constraints, parentUsesSize: true);
     visitChildren((RenderObject child) {
-      if (child == selectedTab || child == nextTab || child == previousTab)
+      if (child == selectedTab || child == nextTab || child == previousTab) {
         return;
+      }
       child.layout(constraints);
     });
 
@@ -238,14 +241,19 @@ class InlineTabViewRenderObject extends RenderBox
     final primaryRightBorder =
         _relativeCentralDrawPosition + (primaryChild.size.width / 2);
 
-    if (primaryRightBorder > 0.0 && primaryLeftBorder < size.width)
+    if (primaryRightBorder > 0.0 && primaryLeftBorder < size.width) {
       visitor(primaryChild);
+    }
     if (nextChild != null &&
         primaryRightBorder + size.width > 0.0 &&
-        primaryLeftBorder + size.width < size.width) visitor(nextChild);
+        primaryLeftBorder + size.width < size.width) {
+      visitor(nextChild);
+    }
     if (previousChild != null &&
         primaryRightBorder - size.width > 0.0 &&
-        primaryLeftBorder - size.width < size.width) visitor(previousChild);
+        primaryLeftBorder - size.width < size.width) {
+      visitor(previousChild);
+    }
   }
 
   @override

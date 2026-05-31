@@ -47,7 +47,7 @@ class _InlineTabViewElement extends MultiChildRenderObjectElement {
   void debugVisitOnstageChildren(ElementVisitor visitor) {
     // This feels kind of hacky, but it's the only way I could find that
     // hides the offstage children from the widget tester.
-    final renderObjectChildren = [];
+    final renderObjectChildren = <RenderObject>[];
     renderObject.visitChildrenForSemantics(renderObjectChildren.add);
     children
         .where((Element e) => renderObjectChildren.contains(e.renderObject))
