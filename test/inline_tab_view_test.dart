@@ -94,8 +94,8 @@ void main() {
     expect(find.text('Tab 1').hitTestable(), findsOneWidget);
     expect(find.text('Tab 2').hitTestable(), findsNothing);
 
-    final center = await tester.getCenter(find.byType(InlineTabView));
-    final leftEdge = await tester.getBottomLeft(find.byType(InlineTabView)).dx;
+    final center = tester.getCenter(find.byType(InlineTabView));
+    final leftEdge = tester.getBottomLeft(find.byType(InlineTabView)).dx;
 
     // Start drag
     final gesture = await tester.startGesture(Offset(center.dx, center.dy));
@@ -129,7 +129,7 @@ void main() {
     expect(find.text('Tab 4').hitTestable(), findsNothing);
     expect(find.text('Tab 5').hitTestable(), findsNothing);
 
-    final center = await tester.getCenter(find.byType(InlineTabView));
+    final center = tester.getCenter(find.byType(InlineTabView));
     final gesture = await tester.startGesture(Offset(center.dx, center.dy));
     await tester.pump();
     await gesture.moveTo(center + Offset(-20.0, 5.0));
@@ -177,7 +177,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
 
-    final center = await tester.getCenter(find.byType(InlineTabView));
+    final center = tester.getCenter(find.byType(InlineTabView));
     await tester.startGesture(Offset(center.dx, center.dy));
     expect(tester.takeException(), isNull);
 
@@ -205,7 +205,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
 
-    final center = await tester.getCenter(find.byType(InlineTabView));
+    final center = tester.getCenter(find.byType(InlineTabView));
     final gesture = await tester.startGesture(Offset(center.dx, center.dy));
     expect(tester.takeException(), isNull);
 
@@ -234,7 +234,7 @@ void main() {
     ));
     expect(tester.takeException(), isNull);
 
-    final center = await tester.getCenter(find.byType(InlineTabView));
+    final center = tester.getCenter(find.byType(InlineTabView));
     final gesture = await tester.startGesture(Offset(center.dx, center.dy));
     expect(tester.takeException(), isNull);
 

@@ -5,9 +5,9 @@ void main() {
   runApp(MaterialApp(
     title: 'InlineTabView examples',
     theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-        appBarTheme: AppBarTheme(color: Colors.teal)),
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      useMaterial3: true,
+    ),
     home: Scaffold(
       appBar: AppBar(title: Text('InlineTabView examples')),
       body: const InlineTabViewExample(),

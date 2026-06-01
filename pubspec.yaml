@@ -1,6 +1,6 @@
 name: inline_tab_view
 description: "A TabBarView that can be nested in scrollables while sticking to flutter best practices and avoiding hacks."
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/derdilla/inline_tab_view
 
 environment:
@@ -12,5 +12,6 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
